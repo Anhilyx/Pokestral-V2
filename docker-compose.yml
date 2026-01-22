@@ -1,8 +1,8 @@
 services:
 
   pokestral-showdown:
-    build: showdown
-    container_name: pokestral-showdown
+    build: scraping
+    container_name: pokestral-scraping
     ports:
       - "3110:8000"
     networks:
