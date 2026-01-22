@@ -1,2 +1,23 @@
+#---------#
+# Generic #
+#---------#
+
+.idea/
+.vscode/
+
+#-------------------#
+# Language-Specific #
+#-------------------#
+
+# Node.js
+node_modules/
+
+# Python
 .venv/
+
+#-----------------#
+# Module-Specific #
+#-----------------#
+
+# Scrapping
 scraping/replays/
