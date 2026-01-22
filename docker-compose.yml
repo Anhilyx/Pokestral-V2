@@ -1,0 +1,14 @@
+services:
+
+  pokestral-showdown:
+    build: showdown
+    container_name: pokestral-showdown
+    ports:
+      - "3110:8000"
+    networks:
+      - pokestral-network
+    restart: unless-stopped
+
+networks:
+  pokestral-network:
+    driver: bridge
