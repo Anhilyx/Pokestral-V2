@@ -21,3 +21,4 @@ node_modules/
 
 # Scrapping
 scraping/replays/
+scraping/stats_output/
