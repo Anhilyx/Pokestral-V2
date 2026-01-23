@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Dégâts Pokémon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #3b82f6; /* Bleu moderne */
+            --primary-hover: #2563eb;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+            --radius: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .main-wrapper {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        /* Layout 2 colonnes sur desktop */
+        @media (min-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .form-section {
+            padding: 25px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .result-section {
+            padding: 25px;
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fff;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .result-box {
+            flex-grow: 1;
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: var(--radius);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 500px;
+            border: 1px solid #334155;
+        }
+
+        .result-header {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* États de résultat */
+        .status-loading { color: #fbbf24; }
+        .status-error { color: #f87171; border-color: #f87171; background-color: #450a0a; }
+        .status-success { border-color: #22c55e; }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <header>
+            <h1>⚡ Damage Calc API Tester</h1>
+        </header>
+
+        <div class="content-grid">
+            <div class="form-section">
+                <div class="field">
+                    <label for="gen">Génération</label>
+                    <select id="gen">
+                        <option value="9" selected>Gen 9 (Scarlet/Violet)</option>
+                        <option value="8">Gen 8 (Sword/Shield)</option>
+                        <option value="7">Gen 7 (Sun/Moon)</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="attacker">Set de l'Attaquant (Import Smogon)</label>
+                    <textarea id="attacker" spellcheck="false" placeholder="Coller le set ici...">Calyrex-Shadow @ Life Orb&#10;Ability: As One (Spectrier)&#10;EVs: 252 SpA / 4 SpD / 252 Spe&#10;Timid Nature&#10;- Astral Barrage</textarea>
+                </div>
+
+                <div class="field">
+                    <label for="defender">Pokémon Défenseur</label>
+                    <input type="text" id="defender" placeholder="ex: Blissey" value="Blissey">
+                </div>
+
+                <div class="field">
+                    <label for="move">Capacité utilisée</label>
+                    <input type="text" id="move" placeholder="ex: Astral Barrage" value="Astral Barrage">
+                </div>
+
+                <button onclick="calculateDamage()">
+                    Lancer le Calcul
+                </button>
+            </div>
+
+            <div class="result-section">
+                <div class="result-header">
+                    <span>Réponse JSON</span>
+                    <span style="font-size: 0.8rem; opacity: 0.7;">POST /calculate</span>
+                </div>
+                <div id="result" class="result-box">En attente de calcul...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function calculateDamage() {
+            const resultDiv = document.getElementById('result');
+            
+            // UI Feedback : Loading state
+            resultDiv.innerText = "// Calcul en cours vers localhost:3000...";
+            resultDiv.classList.remove('status-error', 'status-success');
+            resultDiv.classList.add('status-loading');
+
+            const payload = {
+                gen: parseInt(document.getElementById('gen').value),
+                attacker: document.getElementById('attacker').value,
+                defender: document.getElementById('defender').value,
+                move: document.getElementById('move').value
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Erreur HTTP " + response.status);
+                }
+
+                // Succès
+                resultDiv.classList.remove('status-loading');
+                resultDiv.classList.add('status-success');
+                resultDiv.innerText = JSON.stringify(data, null, 2);
+
+            } catch (err) {
+                // Erreur
+                resultDiv.classList.remove('status-loading');
+                resultDiv.classList.add('status-error');
+                resultDiv.innerText = `// ERREUR :\n${err.message}\n\n// Vérifiez que le serveur tourne sur le port 3000.`;
+            }
+        }
+    </script>
+</body>
+</html>
