@@ -8,10 +8,11 @@ app.use(express.json());
 
 app.post('/calculate', (req, res) => {
     try {
-        const { gen, attacker, defender, move } = req.body;
-        const result = calc(attacker, defender, move, gen);
+        const { gen, attacker, defender } = req.body;
+        const result = calc(attacker, defender, gen);
         res.json(result);
     } catch (err) {
+        console.error(err);
         res.status(400).json({ error: err.message });
     }
 });

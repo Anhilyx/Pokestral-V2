@@ -192,17 +192,12 @@
 
                 <div class="field">
                     <label for="attacker">Set de l'Attaquant (Import Smogon)</label>
-                    <textarea id="attacker" spellcheck="false" placeholder="Coller le set ici...">Calyrex-Shadow @ Life Orb&#10;Ability: As One (Spectrier)&#10;EVs: 252 SpA / 4 SpD / 252 Spe&#10;Timid Nature&#10;- Astral Barrage</textarea>
+                    <textarea id="attacker" spellcheck="false" placeholder="Coller le set ici...">Calyrex-Shadow @ Life Orb&#10;Ability: As One (Spectrier)&#10;EVs: 252 SpA / 4 SpD / 252 Spe&#10;Timid Nature&#10;- Astral Barrage&#10;- Close Combat</textarea>
                 </div>
 
                 <div class="field">
                     <label for="defender">Pokémon Défenseur</label>
                     <input type="text" id="defender" placeholder="ex: Blissey" value="Blissey">
-                </div>
-
-                <div class="field">
-                    <label for="move">Capacité utilisée</label>
-                    <input type="text" id="move" placeholder="ex: Astral Barrage" value="Astral Barrage">
                 </div>
 
                 <button onclick="calculateDamage()">
@@ -232,8 +227,7 @@
             const payload = {
                 gen: parseInt(document.getElementById('gen').value),
                 attacker: document.getElementById('attacker').value,
-                defender: document.getElementById('defender').value,
-                move: document.getElementById('move').value
+                defender: document.getElementById('defender').value
             };
 
             try {

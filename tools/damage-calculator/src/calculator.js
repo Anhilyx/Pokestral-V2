@@ -1,4 +1,4 @@
-const { calculate, Generation, Generations, Pokemon, Move } = require('@smogon/calc');
+const { calculate, Generations, Pokemon, Move } = require('@smogon/calc');
 const { Dex } = require('@pkmn/dex');
 
 /**
@@ -103,34 +103,13 @@ function parseSmogonSet(setString) {
 }
 
 /**
- * Retrieve the stats of a Pokemon for a given generation
- * @param {string} name - The name of the Pokemon
- * @param {Generation} gen - The generation object
- * @returns {object} The Pokemon stats
- */
-function getPokemonStats(name, gen) {
-
-    // Retrieve the Pokemon data from the Dex
-    const pokemon = Dex.forGen(gen).species.get(name);
-    // Check existence
-    if (!pokemon.exists)
-        throw new Error(`Pokemon ${name} not found in generation ${gen}.`);
-
-    // Extract base stats
-    const stats = { ...pokemon.baseStats };
-
-    return stats;
-}
-
-/**
  * Calculate damage from attacker to defender using a move in a given generation
  * @param {object} attackerSet - The Smogon set string for the attacker
  * @param {string} defenderName - The name of the defender Pokemon
- * @param {string} moveName - The name of the move used
  * @param {number} genId - The generation number (default: 9)
  * @returns {object} Damage calculation results for various stat configurations
  */
-function calc(attackerSet, defenderName, moveName, genId=9) {
+function calc(attackerSet, defenderName, genId=9) {
 
     // Create generation object
     const gen = Generations.get(genId);
@@ -141,30 +120,71 @@ function calc(attackerSet, defenderName, moveName, genId=9) {
         ...attackerData
     });
 
-    // Create move
-    const move = new Move(gen, moveName);
+    // Create moves
+    const moves = [];
+    for (const moveName of attackerData.moves)
+        moves.push(new Move(gen, moveName));
 
     // Prepare data container
     let data = {};
+
     // Create options variants
     const options = {
-        "":              {                                                                                                },  // No stats
-        "hp":            { evs: { hp: 252                     }                                                           },  // max HP
-        "def":           { evs: {          def: 252, spd: 252 }                                                           },  // max defenses
-        "hp+def":        { evs: { hp: 252, def: 252, spd: 252 }                                                           },  // max HP + max defenses
-        "hp+nature":     { evs: { hp: 252                     }, nature: move.category === 'Physical' ? 'Impish' : 'Calm' },  // max HP + defensive nature
-        "def+nature":    { evs: {          def: 252, spd: 252 }, nature: move.category === 'Physical' ? 'Impish' : 'Calm' },  // max defenses + defensive nature
-        "hp+def+nature": { evs: { hp: 252, def: 252, spd: 252 }, nature: move.category === 'Physical' ? 'Impish' : 'Calm' },  // max HP + max defenses + defensive nature
+        //                 🔴 HP        🔴 DEF/SPD                    🔴 Nature
+        "default":        {maxHP: false, maxDef: false, maxSpd: false, nature: false},
+
+        //                 🔴 HP        🟢 DEF/SPD                    🔴 Nature
+        "max-stats-def":  {maxHP: false, maxDef: true,  maxSpd: false, nature: false},
+        "max-stats-spd":  {maxHP: false, maxDef: false, maxSpd: true,  nature: false},
+
+        //                 🔴 HP        🟢 DEF/SPD                    🟢 Nature
+        "max-def":        {maxHP: false, maxDef: true,  maxSpd: false, nature: true},
+        "max-spd":        {maxHP: false, maxDef: false, maxSpd: true,  nature: true },
+
+        //                 🟢 HP        🔴 DEF/SPD                    🔴 Nature
+        "max-hp":         {maxHP: true,  maxDef: false, maxSpd: false, nature: false},
+
+        //                 🟢 HP        🟢 DEF/SPD                    🔴 Nature
+        "max-stats-phys": {maxHP: true,  maxDef: true,  maxSpd: false, nature: false},
+        "max-stats-spec": {maxHP: true,  maxDef: false, maxSpd: true,  nature: false},
+        
+        //                 🟢 HP        🟢 DEF/SPD                    🔴 Nature
+        "max-phys":       {maxHP: true,  maxDef: true,  maxSpd: false, nature: true },
+        "max-spec":       {maxHP: true,  maxDef: false, maxSpd: true,  nature: true },
     };
 
     // Calculate damages for each option set
     for (const [key, opts] of Object.entries(options)) {
+        // Initialize data container
+        data[key] = {};
 
         // Create defender Pokemon
-        const defender = new Pokemon(gen, defenderName, opts);
+        const defender = new Pokemon(gen, defenderName, {
+            // Define stats based on options
+            evs: {
+                hp: opts.maxHP ? 252 : 0,
+                def: opts.maxDef ? 252 : 0,
+                spd: opts.maxSpd ? 252 : 0,
+            },
+            nature: (opts.nature && opts.maxDef) ? 'Impish' :
+                    (opts.nature && opts.maxSpd) ? 'Calm'   :
+                                                   'Quirky'
+        });
 
-        // Perform calculation
-        data[key] = calculate(gen, attacker, defender, move);
+        for (const move of moves) {
+            // Perform calculation
+            const result = calculate(gen, attacker, defender, move);
+
+            // Store parsed result
+            data[key][move.name] = {
+                min: result.damage.length ?
+                     result.damage[0] :
+                     result.damage,
+                max: result.damage.length ?
+                     result.damage[result.damage.length - 1] :
+                     result.damage
+            }
+        }
     }
     
     return data;
