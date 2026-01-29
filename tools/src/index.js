@@ -1,15 +1,15 @@
 const cors = require('cors');
 const express = require('express');
-const { calc } = require('./calculator');
+const { calculateDamage } = require('./tools/damage-calculator');
 
 const app = express();
 app.use(cors()); // Allow CORS for all origins (⚠️ Testing only ⚠️)
 app.use(express.json());
 
-app.post('/calculate', (req, res) => {
+app.post('/damage-calculator', (req, res) => {
     try {
         const { gen, attacker, defender } = req.body;
-        const result = calc(attacker, defender, gen);
+        const result = calculateDamage(attacker, defender, gen);
         res.json(result);
     } catch (err) {
         console.error(err);
