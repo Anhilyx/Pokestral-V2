@@ -1,11 +1,11 @@
-const { Dex } = require('@pkmn/dex');
+import { Dex } from '@pkmn/dex';
 
 /**
  * Parse a Smogon set string into a data object
  * @param {string} setString - The Smogon set string
  * @returns {object} Parsed data object
  */
-function parseSmogonSet(setString) {
+export function parseSmogonSet(setString) {
 
     // Prepare data container
     let data = {};
@@ -100,5 +100,3 @@ function parseSmogonSet(setString) {
 
     return data;
 }
-
-module.exports = { parseSmogonSet };

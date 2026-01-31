@@ -1,0 +1,118 @@
+/****************
+| Global styles |
+****************/
+
+/***** Layout *****/
+
+html {
+    overflow: hidden !important;
+}
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/***** Font *****/
+
+.v-application {
+    font-family: 'Segoe UI', Tahoma, monospace;
+}
+
+/******************
+| Generic classes |
+******************/
+
+/***** Prevent selection ******/
+
+.no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/***** Scroll *****/
+
+.no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollable {
+    overflow-y: scroll;
+}
+
+/***** No wrap *****/
+
+.nowrap {
+    text-wrap: nowrap;
+}
+
+/***** Weights *****/
+
+.strong {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.weak {
+    opacity: 0.75;
+    font-size: 0.9em;
+}
+
+/**********
+| Effects |
+**********/
+
+/***** Glitch effect *****/
+
+/* Variables */
+.glitch {
+    /* Colors */
+    --glitch-color-1: red;
+    --glitch-color-2: blue;
+
+    /* Strength */
+    --glitch-strength-animation: 10deg;
+    --glitch-strength-low:  1px;
+    --glitch-strength-high: 2px;
+}
+
+.glitch {
+    /* Corrupted text effect */
+    text-shadow:           var(--glitch-strength-low)  0 0 var(--glitch-color-1),
+                 calc(-1 * var(--glitch-strength-low)) 0 0 var(--glitch-color-2);
+
+    /* Glitch effect */
+    animation: glitch 3s infinite alternate-reverse;
+}
+
+/* Glitch animation */
+@keyframes glitch {
+     95% { transform: skewX(                                      0deg);  text-shadow: var(--glitch-strength-low)  0 0 var(--glitch-color-1), calc(-1 * var(--glitch-strength-low))  0 0 var(--glitch-color-2); }
+     97% { transform: skewX(calc(-1 * var(--glitch-strength-animation))); text-shadow: var(--glitch-strength-high) 0 0 var(--glitch-color-1), calc(-1 * var(--glitch-strength-high)) 0 0 var(--glitch-color-2); }
+     99% { transform: skewX(          var(--glitch-strength-animation));  text-shadow: var(--glitch-strength-high) 0 0 var(--glitch-color-1), calc(-1 * var(--glitch-strength-high)) 0 0 var(--glitch-color-2); }
+    100% { transform: skewX(                                      0deg);  text-shadow: var(--glitch-strength-low)  0 0 var(--glitch-color-1), calc(-1 * var(--glitch-strength-low))  0 0 var(--glitch-color-2); }
+}
+
+/************
+| Variables |
+************/
+
+/***** Theme variables *****/
+
+:root {
+    /* Animation durations */
+    --animation-speed-fast:   0.2s;
+    --animation-speed-medium: 0.3s;
+    --animation-speed-slow:   0.5s;
+
+    /* Background colors */
+    --container-background-empty: hsl(0, 0%, 20%);
+    --container-background-filled: hsl(210, 100%, 50%);
+}
