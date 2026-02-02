@@ -13,3 +13,15 @@ An agent that can give definitions for strategic terms used in competitive Pokem
 As an input, you give it a string, and you receive a precise definition of this term as an output. This can either be achieved by searching in a list with some leiniency, or by using an AI to detect what word was requested.
 
 When the term is not found, the agent should return a specific message/value indicating that the term is not in the dictionnary.
+
+# Workflow
+
+            --------------------------------------------------
+            |                                                V
+------> Central AI <------------- AI that choose the best (statistically speaking) action
+         |    ^                   (also, possibly a self-learning AI)
+         |    |
+         |    |
+         V    |
+    Multiple agents to gather informations
+    (only on the central AI request)
