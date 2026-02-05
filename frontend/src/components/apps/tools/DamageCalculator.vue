@@ -1,35 +1,89 @@
 <script setup>
     import { ref } from 'vue';
-    import { calculateDamage } from '@/services/tools';
+    import { calculateDamage_knownAttacker, calculateDamage_knownDefender, calculateDamage_knownBoth, calculateDamage_knownNone } from '@/services/tools';
 
-    const attacker = ref('');
-    const defender = ref('');
+    const isAttackerKnown = ref(true);
+    const attackerSet = ref(
+        'Arceus @ Life Orb'               + '\n' +
+        'Ability: Multitype'              + '\n' +
+        'EVs: 228 Atk / 28 SpA / 252 Spe' + '\n' +
+        'Naughty Nature'                  + '\n' +
+        '- Swords Dance'                  + '\n' +
+        '- Extreme Speed'                 + '\n' +
+        '- Earthquake'                    + '\n' +
+        '- Ice Beam'
+    );
+    const attackerName = ref('Arceus');
+    const attackerMoves = ref('Swords Dance, Extreme Speed, Earthquake, Ice Beam');
+
+    const isDefenderKnown = ref(false);
+    const defenderSet = ref(
+        'Blissey @ Leftovers'           + '\n' +
+        'Ability: Natural Cure'         + '\n' +
+        'EVs: 252 HP / 252 Def / 4 SpD' + '\n' +
+        'Bold Nature'                   + '\n' +
+        '- Seismic Toss'                + '\n' +
+        '- Toxic'                       + '\n' +
+        '- Soft-Boiled'                 + '\n' +
+        '- Heal Bell'
+    );
+    const defenderName = ref('Blissey');
+
     const generation = ref(9);
 
     const result = ref(undefined);
     const error = ref(undefined);
 
-    function calculate() {
-        // Skip if either field is empty
-        if (!attacker.value.trim() || !defender.value.trim())
-            return;
+    async function calculate() {
+        try {
+            let res;
+            
+            // Attacker set is known & defender set is unknown
+            if (isAttackerKnown.value && !isDefenderKnown.value)
+                res = await calculateDamage_knownAttacker({
+                    attacker: attackerSet.value,
+                    defender: defenderName.value,
+                    generation: generation.value,
+                });
 
-        // Call the API to calculate damage
-        calculateDamage({
-            attacker: attacker.value,
-            defender: defender.value,
-            generation: generation.value,
-        })
+            // Attacker set is unknown & defender set is known
+            else if (!isAttackerKnown.value && isDefenderKnown.value)
+                res = await calculateDamage_knownDefender({
+                    attacker: attackerName.value,
+                    defender: defenderSet.value,
+                    moves: attackerMoves.value.split(',').map(move => move.trim()),
+                    generation: generation.value,
+                });
+
+            // Attacker set is known & defender set is known
+            else if (isAttackerKnown.value && isDefenderKnown.value)
+                res = await calculateDamage_knownBoth({
+                    attacker: attackerSet.value,
+                    defender: defenderSet.value,
+                    generation: generation.value,
+                });
+
+            // Attacker set is unknown & defender set is unknown
+            else if (!isAttackerKnown.value && !isDefenderKnown.value)
+                res = await calculateDamage_knownNone({
+                    attacker: attackerName.value,
+                    defender: defenderName.value,
+                    moves: attackerMoves.value.split(',').map(move => move.trim()),
+                    generation: generation.value,
+                });
         
-        .then((res) => {
+            // Store results
             result.value = res.data; 
             error.value = undefined;
-        })
+            console.log(res.data);
+        }
         
-        .catch((err) => {
+        // Error case
+        catch (err) {
+            console.error(err);
             result.value = undefined;
             error.value = err;
-        });
+        }
     }
 
     // Smooth scrolling + slowdown
@@ -71,7 +125,9 @@
 
         <template #input>
             <!-- Attacking Pokemon -->
-             <HoloTextArea
+            <VSwitch v-model="isAttackerKnown"></VSwitch>
+            <HoloTextArea v-if="isAttackerKnown"
+                class="monospace"
                 label="Attacker Set"
                 :placeholder="
                     'Arceus @ Life Orb'               + '\n' +
@@ -84,16 +140,51 @@
                     '- Ice Beam'
                 "
 
-                v-model="attacker"
+                v-model="attackerSet"
                 @blur="calculate()"
             />
+            <div v-else>
+                <HoloTextField
+                    label="Attacker Name"
+                    placeholder="Arceus"
+
+                    v-model="attackerName"
+                    @blur="calculate()"
+                />
+                <HoloTextField
+                    class="monospace"
+                    label="Attacker Moves"
+                    placeholder="Swords Dance, Extreme Speed, Earthquake, Ice Beam"
+
+                    v-model="attackerMoves"
+                    @blur="calculate()"
+                />
+            </div>
 
             <!-- Defending Pokemon -->
-            <HoloTextField
-                label="Defender Name"
-                placeholder=""
+            <VSwitch v-model="isDefenderKnown"></VSwitch>
+            <HoloTextArea v-if="isDefenderKnown"
+                class="monospace"
+                label="Defender Set"
+                :placeholder="
+                    'Blissey @ Leftovers' + '\n' +
+                    'Ability: Natural Cure' + '\n' +
+                    'EVs: 252 HP / 252 Def / 4 SpD' + '\n' +
+                    'Bold Nature' + '\n' +
+                    '- Seismic Toss' + '\n' +
+                    '- Toxic' + '\n' +
+                    '- Soft-Boiled' + '\n' +
+                    '- Heal Bell'
+                "
 
-                v-model="defender"
+                v-model="defenderSet"
+                @blur="calculate()"
+            />
+            <HoloTextField v-else
+                label="Defender Name"
+                placeholder="Blissey"
+
+                v-model="defenderName"
                 @blur="calculate()"
             />
 
@@ -176,7 +267,7 @@
             <!-- Else show error/result -->
             <div v-else class="damage-calculator__output-json">
                 <HoloTextArea
-                    class=""
+                    class="monospace"
                     :label="result ? 'Result JSON' : 'Error Message'"
                     :model-value="JSON.stringify(result ?? error, null, 1)"
                     readonly
@@ -193,7 +284,8 @@
     }
 
     /* Use a monospace font for the attacker set & JSON output */
-    :deep(textarea) {
+    :deep(.monospace textarea),
+    :deep(.monospace input) {
         font-family: 'Courier New', Courier, monospace;
     }
 
