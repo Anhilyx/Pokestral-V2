@@ -125,7 +125,9 @@
 
         <template #input>
             <!-- Attacking Pokemon -->
-            <VSwitch v-model="isAttackerKnown"></VSwitch>
+            <HoloSwitch v-model="isAttackerKnown">
+                Use full attacker set
+            </HoloSwitch>
             <HoloTextArea v-if="isAttackerKnown"
                 class="monospace"
                 label="Attacker Set"
@@ -162,7 +164,9 @@
             </div>
 
             <!-- Defending Pokemon -->
-            <VSwitch v-model="isDefenderKnown"></VSwitch>
+            <HoloSwitch v-model="isDefenderKnown">
+                Use full defender set
+            </HoloSwitch>
             <HoloTextArea v-if="isDefenderKnown"
                 class="monospace"
                 label="Defender Set"

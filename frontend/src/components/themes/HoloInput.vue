@@ -29,5 +29,31 @@
         
         --holo-input__glow-color-focus: color-mix(in srgb, var(--holo-theme__glow-medium-color), transparent 30%);
         --holo-input__glow-focus: 0 0 var(--holo-theme__glow-strength-high) var(--holo-input__glow-color-focus);
+
+        /* Colors 2 */
+        --holo-input__empty-color-2: color-mix(in srgb, var(--holo-theme__background-color-off), transparent                          70%);
+        --holo-input__fill-color-2:  color-mix(in srgb, var(--holo-theme__background-color),     transparent                          50%);
+        --holo-input__thumb-color-2: color-mix(in srgb, var(--holo-theme__background-color),     var(--holo-theme__glow-medium-color) 20%);
+        
+        --holo-input__empty-color-2-hover: color-mix(in srgb, var(--holo-theme__background-color-off), transparent                          70%);
+        --holo-input__fill-color-2-hover:  color-mix(in srgb, var(--holo-theme__background-color),     transparent                          30%);
+        --holo-input__thumb-color-2-hover: color-mix(in srgb, var(--holo-theme__background-color),     var(--holo-theme__glow-medium-color) 35%);
+        
+        --holo-input__empty-color-2-focus: color-mix(in srgb, var(--holo-theme__background-color-off), transparent                           70%);
+        --holo-input__fill-color-2-focus:  color-mix(in srgb, var(--holo-theme__background-color),     transparent                           10%);
+        --holo-input__thumb-color-2-focus: color-mix(in srgb, var(--holo-theme__background-color),     var(--holo-theme__glow-medium-color) 100%);
+
+        /* Glow */
+        --holo-input__empty-glow-2: 0 0 0px                                                                                    var(--holo-input__empty-color-2);
+        --holo-input__fill-glow-2:  0 0 var(--holo-theme__glow-strength-low)                                                   var(--holo-input__glow-color-2);
+        --holo-input__thumb-glow-2: 0 0 calc(var(--holo-theme__glow-strength-low) * var(--holo-input__thumb-glow-multiplier)) var(--holo-input__glow-color-2);
+
+        --holo-input__empty-glow-2-hover: 0 0 0px                                                                                      var(--holo-input__empty-color-2);
+        --holo-input__fill-glow-2-hover:  0 0 var(--holo-theme__glow-strength-medium)                                                   var(--holo-input__glow-color-2);
+        --holo-input__thumb-glow-2-hover: 0 0 calc(var(--holo-theme__glow-strength-medium) * var(--holo-input__thumb-glow-multiplier)) var(--holo-input__glow-color-2);
+
+        --holo-input__empty-glow-2-focus: 0 0 0px                                                                                     var(--holo-input__empty-color-2);
+        --holo-input__fill-glow-2-focus:  0 0 var(--holo-theme__glow-strength-high)                                                   var(--holo-input__glow-color-2);
+        --holo-input__thumb-glow-2-focus: 0 0 calc(var(--holo-theme__glow-strength-high) * var(--holo-input__thumb-glow-multiplier)) var(--holo-input__glow-color-2);
     }
 </style>
