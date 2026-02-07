@@ -33,6 +33,7 @@
     <HoloTheme
         class="holo-div"
         :style="{
+            pointerEvents: props.show ? 'auto' : 'none',
             '--holo-div__width': `${width}px`,
             '--holo-div__show': props.show ? 1 : 0,
         }"

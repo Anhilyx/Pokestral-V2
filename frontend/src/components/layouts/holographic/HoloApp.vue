@@ -120,7 +120,8 @@ import { watch } from 'vue';
     <HoloTheme
         class="holo-app"
         :style="{
-            width: `${show ? props.width : 0}px`
+            width: `${props.show ? props.width : 0}px`,
+            pointerEvents: props.show ? 'auto' : 'none'
         }"
     >
         <div

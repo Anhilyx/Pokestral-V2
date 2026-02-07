@@ -1,4 +1,12 @@
 <script setup>
+    import { ref } from 'vue';
+
+    const mapRef = ref(null);
+
+    defineExpose({
+        mapRef
+    });
+
     defineOptions({
         inheritAttrs: false
     });
@@ -7,9 +15,11 @@
 <template>
     <HoloTheme class="holo-street-map">
         <div class="holo-street-map__border">
-            <div class="holo-streeet-map__color">
+            <div class="holo-street-map__color">
                 <StreetMap
                     v-bind="$attrs"
+                    @load="$emit('load', $event)"
+                    ref="mapRef"
                     map-style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
                 />
             </div>

@@ -1,4 +1,5 @@
 <script setup>
+    import HoloStreetMapPlus from '@/components/apps/radio-network/components/HoloStreetMapPlus.vue';
 </script>
 
 <template>
@@ -11,7 +12,9 @@
     >
 
         <template #input>
-            <HoloStreetMap />
+            <HoloStreetMapPlus
+                @area-changed=""
+            />
         </template>
 
         <template #output-1>
