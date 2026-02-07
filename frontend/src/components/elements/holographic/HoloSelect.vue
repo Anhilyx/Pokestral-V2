@@ -58,7 +58,7 @@
             observer = null;
         }
     });
-    
+   
     defineOptions({
         inheritAttrs: false
     });
@@ -75,7 +75,7 @@
             density="comfortable"
             :hide-details="true"
             menu-icon
-            
+           
             :menu-props="{
                 style: cssVariables,
                 contentClass: 'holo-select__menu'
@@ -159,7 +159,7 @@
         margin: 0 !important;
         padding: 0 !important;
         gap: var(--holo-select__menu-gap) !important;
-        
+       
         /* Background */
         background: none !important;
         backdrop-filter: blur(var(--holo-theme__blur-strength-high)) !important;

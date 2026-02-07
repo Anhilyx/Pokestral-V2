@@ -20,7 +20,7 @@
         // Use custom color if provided
         if (props.color)
             return props.color;
-        
+       
         // Else use hst-based color scaling
         const hue = props.percent / 100 * 150;  // Between 0 (red) and 150 (cyan/green)
 
@@ -82,7 +82,7 @@
         /* Size */
         height: 200%;
         width: 100%;
-        
+       
         /* Layout */
         padding: var(--gauge__glow-spread);
     }
@@ -125,7 +125,7 @@
         /* Position */
         position: absolute;
         inset: 0;
-        
+       
         /* Shape */
         border-radius: 50%;
         border: solid var(--gauge__thickness);
@@ -139,18 +139,18 @@
         /* Position */
         position: absolute;
         inset: 0;
-        
+       
         /* Shape */
         border-radius: 50%;
         padding: var(--gauge__thickness);
-        
+       
         /* Fill color */
         background: var(--gradient);
-        
+       
         /* Hide center */
-        mask:          linear-gradient(#fff 0 0) content-box, 
+        mask:          linear-gradient(#fff 0 0) content-box,
                        linear-gradient(#fff 0 0);
-        -webkit-mask:  linear-gradient(#fff 0 0) content-box, 
+        -webkit-mask:  linear-gradient(#fff 0 0) content-box,
                        linear-gradient(#fff 0 0);
 
         -webkit-mask-composite: xor;
@@ -173,18 +173,18 @@
         /* Position */
         position: absolute;
         inset: 0;
-        
+       
         /* Shape */
         border-radius: 50%;
         padding: var(--gauge__thickness);
-        
+       
         /* Fill color */
         background: var(--gradient);
-        
+       
         /* Hide center */
-        mask:          linear-gradient(#fff 0 0) content-box, 
+        mask:          linear-gradient(#fff 0 0) content-box,
                        linear-gradient(#fff 0 0);
-        -webkit-mask:  linear-gradient(#fff 0 0) content-box, 
+        -webkit-mask:  linear-gradient(#fff 0 0) content-box,
                        linear-gradient(#fff 0 0);
         -webkit-mask-composite: xor;
         mask-composite: exclude;
@@ -200,7 +200,7 @@
         display: flex;
         align-items: end;
         justify-content: center;
-        
+       
         /* Text style */
         color: color-mix(
             in srgb,

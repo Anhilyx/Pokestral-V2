@@ -14,7 +14,7 @@
         <VTextField
             v-model="model"
             v-bind="$attrs"
-            
+           
             variant="outlined"
             density="comfortable"
             :hide-details="true"
@@ -122,7 +122,7 @@
     .holo-text-field__spinner-arrow-down {
         /* Size */
         height: calc(var(--holo-text-field__spinner-height) / 2);
-        
+       
         /* Layout */
         display: flex;
         overflow: hidden;
@@ -143,7 +143,7 @@
         --holo-text-field__spinner-color: var(--holo-theme__text-color-accentued);
         --holo-text-field__spinner-glow-strength: var(--holo-theme__glow-strength-text-medium);
     }
-    
+   
     /* Fix icon base shape (lot of empty space) */
     .holo-text-field__spinner-arrow-up {
         /* Layout */

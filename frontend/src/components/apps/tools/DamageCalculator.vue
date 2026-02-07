@@ -37,7 +37,7 @@
     async function calculate() {
         try {
             let res;
-            
+           
             // Attacker set is known & defender set is unknown
             if (isAttackerKnown.value && !isDefenderKnown.value)
                 res = await calculateDamage_knownAttacker({
@@ -71,13 +71,13 @@
                     moves: attackerMoves.value.split(',').map(move => move.trim()),
                     generation: generation.value,
                 });
-        
+       
             // Store results
-            result.value = res.data; 
+            result.value = res.data;
             error.value = undefined;
             console.log(res.data);
         }
-        
+       
         // Error case
         catch (err) {
             console.error(err);

@@ -25,16 +25,16 @@ import { watch } from 'vue';
             type: Object,
             default: {}
         },
-        
+       
         sound: {
             type: Function,
             default: (audioCtx, isOpening) => {
                 // Retrieve current time
                 const t = audioCtx.currentTime;
-                
+               
                 // Define duration based on open/close
                 const duration = isOpening ? 0.2 : 0.13;
-                
+               
                 // Create audio nodes
                 const osc1 = audioCtx.createOscillator();
                 const osc2 = audioCtx.createOscillator();
@@ -49,13 +49,13 @@ import { watch } from 'vue';
 
                 // Create sound envelope
                 masterGain.gain.setValueAtTime(0, t);
-                masterGain.gain.linearRampToValueAtTime(0.25, t + 0.01); 
+                masterGain.gain.linearRampToValueAtTime(0.25, t + 0.01);
                 masterGain.gain.exponentialRampToValueAtTime(0.001, t + duration);
 
                 // Oscillator settings
                 osc1.type = 'sawtooth';
                 osc2.type = 'square';
-                osc1.detune.value = -10; 
+                osc1.detune.value = -10;
                 osc2.detune.value = 10;
 
                 // Opening sound
@@ -70,7 +70,7 @@ import { watch } from 'vue';
                     filter.frequency.exponentialRampToValueAtTime(12000, t + duration);
                     filter.Q.value = 8;
                 }
-                
+               
                 // Closing sound
                 else {
                     osc1.frequency.setValueAtTime(500, t);
@@ -80,7 +80,7 @@ import { watch } from 'vue';
 
                     filter.type = 'lowpass';
                     filter.frequency.setValueAtTime(5000, t);
-                    filter.frequency.exponentialRampToValueAtTime(50, t + duration); 
+                    filter.frequency.exponentialRampToValueAtTime(50, t + duration);
                     filter.Q.value = 1;
                 }
 
@@ -90,7 +90,7 @@ import { watch } from 'vue';
                 // Stop
                 osc1.stop(t + duration + 0.05);
                 osc2.stop(t + duration + 0.05);
-                
+               
                 // Cleanup after sound ends
                 setTimeout(() => {
                     masterGain.disconnect();

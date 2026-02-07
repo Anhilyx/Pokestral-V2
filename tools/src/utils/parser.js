@@ -12,7 +12,7 @@ export function parseSmogonSet(setString) {
 
     // Split by lines
     const lines = setString.split('\n').map(line => line.trim());
-    
+   
     // Extract from first line
     const name = lines[0].match(/^\S+/)?.[0];
     const item = lines[0].match(/@(.*)$/)?.[1].trim();

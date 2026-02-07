@@ -128,7 +128,7 @@
         position: relative;
         width: calc((var(--holo-div__width) - var(--holo-div__border-width)) * var(--holo-div__show));
         margin: calc(var(--holo-div__border-width) / 2) calc(var(--holo-div__border-width) / 2 * var(--holo-div__show));
-        
+       
         /* Borders */
         box-shadow:       0 0 var(--holo-div__border-glow-weak)   var(--holo-theme__glow-bright-weak),
                           0 0 var(--holo-div__border-glow-strong) var(--holo-theme__glow-bright-strong),
@@ -165,7 +165,7 @@
     .holo-div__content {
         /* Layout */
         width: calc(var(--holo-div__width) - var(--holo-div__border-width) - var(--holo-div__content-padding));
-        
+       
         /* Force Size */
         flex-shrink: 0;
         flex-grow: 1;
@@ -189,7 +189,7 @@
         /* Events */
         pointer-events: none;
     }
-    
+   
     /* Blink animations */
     @keyframes blink-background {
         0%, 30%, 70%, 100% {
@@ -217,7 +217,7 @@
     }
 
     /***** Error *****/
-    
+   
     .holo-div__background.holo-div__notif-error {
         /* Colors */
         --holo-div__notif-background-color:  hsla(350, 100%, 50%, 0.1);

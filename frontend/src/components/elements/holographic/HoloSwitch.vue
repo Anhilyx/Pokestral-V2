@@ -14,7 +14,7 @@
         <VSwitch
             v-model="model"
             v-bind="$attrs"
-            
+           
             variant="outlined"
             density="comfortable"
             :hide-details="true"

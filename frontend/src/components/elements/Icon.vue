@@ -37,7 +37,7 @@
 
 <template>
     <span class="icon material-symbols-outlined no-select" :style="{
-        'font-variation-settings': 
+        'font-variation-settings':
             `'FILL' ${fill ? 1 : 0}, ` +
             `'wght' ${weight}, ` +
             `'GRAD' ${grade}, ` +

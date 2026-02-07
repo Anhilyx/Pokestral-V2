@@ -34,7 +34,7 @@ const DEFENDER_REPARTS = {
     //                 🟢 HP        🟢 DEF/SPD                    🔴 Nature
     "max-stats-phys": {maxHP: true,  maxDef: true,  maxSpd: false, nature: false},
     "max-stats-spec": {maxHP: true,  maxDef: false, maxSpd: true,  nature: false},
-    
+   
     //                 🟢 HP        🟢 DEF/SPD                    🟢 Nature
     "max-phys":       {maxHP: true,  maxDef: true,  maxSpd: false, nature: true },
     "max-spec":       {maxHP: true,  maxDef: false, maxSpd: true,  nature: true },
@@ -75,7 +75,7 @@ export function calculateDamage_knownAttacker(attackerSet, defenderName, genId=9
 
     // Create generation object
     const gen = Generations.get(genId);
-    
+   
     // Create attacker Pokemon
     const attackerData = parseSmogonSet(attackerSet);
     const attacker = new Pokemon(gen, attackerData.name, {
@@ -113,7 +113,7 @@ export function calculateDamage_knownAttacker(attackerSet, defenderName, genId=9
             }
         }
     }
-    
+   
     return data;
 }
 
@@ -129,7 +129,7 @@ export function calculateDamage_knownDefender(attackerName, defenderSet, moveNam
 
     // Create generation object
     const gen = Generations.get(genId);
-    
+   
     // Create defender Pokemon
     const defenderData = parseSmogonSet(defenderSet);
     const defender = new Pokemon(gen, defenderData.name, {
@@ -167,7 +167,7 @@ export function calculateDamage_knownDefender(attackerName, defenderSet, moveNam
             }
         }
     }
-    
+   
     return data;
 }
 
@@ -182,7 +182,7 @@ export function calculateDamage_knownBoth(attackerSet, defenderSet, genId=9) {
 
     // Create generation object
     const gen = Generations.get(genId);
-    
+   
     // Create attacker Pokemon
     const attackerData = parseSmogonSet(attackerSet);
     const attacker = new Pokemon(gen, attackerData.name, {
@@ -220,7 +220,7 @@ export function calculateDamage_knownBoth(attackerSet, defenderSet, genId=9) {
                     result.damage
         }
     }
-    
+   
     return data;
 }
 
@@ -279,6 +279,6 @@ export function calculateDamage_knownNone(attackerName, defenderName, moveNames,
             }
         }
     }
-    
+   
     return data;
 }

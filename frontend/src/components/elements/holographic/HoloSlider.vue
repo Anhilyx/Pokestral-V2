@@ -52,7 +52,7 @@
                 model
             }} {{ props.unit ?? '' }} </div>
         </div>
-        
+       
         <LogSlider v-if="props.log"
             v-model="model"
             v-bind="$attrs"
@@ -149,7 +149,7 @@
         --holo-input__empty-color-2: var(--holo-input__empty-color-2-hover);
         --holo-input__fill-color-2:  var(--holo-input__fill-color-2-hover);
         --holo-input__thumb-color-2: var(--holo-input__thumb-color-2-hover);
-        
+       
         /* Glow */
         --holo-input__empty-glow-2:  var(--holo-input__empty-glow-2-hover);
         --holo-input__fill-glow-2:   var(--holo-input__fill-glow-2-hover);

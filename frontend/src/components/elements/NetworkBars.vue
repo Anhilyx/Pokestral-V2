@@ -21,7 +21,7 @@
         // Use custom color if provided
         if (props.color)
             return props.color;
-        
+       
         // Else use hst-based color scaling
         const progress = (props.value - 1) / (props.max - 1);  // Between 1 and max
         const hue = progress * 120;  // Between 0 (red) and 120 (green)

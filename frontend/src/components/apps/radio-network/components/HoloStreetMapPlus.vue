@@ -202,7 +202,7 @@
 
         // 1. Calculate Geometry (Pixels -> LngLat)
         const centerPx = map.project(center);
-        
+       
         // Calculate the 4 corners in absolute pixels
         const pxCoords = [
             { x: centerPx.x - radius, y: centerPx.y - radius }, // TL
@@ -216,7 +216,7 @@
             const ll = map.unproject([p.x, p.y]);
             return [ll.lng, ll.lat];
         });
-        
+       
         // Close the polygon loop
         polyCoords.push(polyCoords[0]);
 
@@ -233,7 +233,7 @@
         // 2. Update Zoom Reference
         // Save the precise GPS position of a corner to recalculate radius on zoom
         selection.value.cornerLngLat = map.unproject([
-            centerPx.x - radius, 
+            centerPx.x - radius,
             centerPx.y - radius
         ]);
 
@@ -271,7 +271,7 @@
         // Retrieve variables for easier access
         const map = mapRef.value;
         const mouse = event.point;
-        
+       
         // Update values (1)
         mouseDownPos.value = mouse;
         isMouseDown.value = true;
@@ -322,7 +322,7 @@
             const newRadius = Math.max(distanceX, distanceY);
             selection.value.radius = Math.max(newRadius, 20);
             updateMap();
-        } 
+        }
 
         // Move selection
         else if (stateInteraction.value === MOVE_SELECTION) {
@@ -398,7 +398,7 @@
             !selection.value.center ||
             !mapRef.value
         ) return;
-        
+       
         // Retrieve variables for easier access
         const map = mapRef.value;
 
@@ -428,8 +428,8 @@
             type: 'fill',
             source: SRC_ID,
             filter: ['==', '$type', 'Polygon'],
-            paint: { 
-                'fill-color': BACKGROUND_COLOR, 
+            paint: {
+                'fill-color': BACKGROUND_COLOR,
                 'fill-opacity': BACKGROUND_OPACITY
             }
         });
@@ -457,7 +457,7 @@
                 'circle-radius': HANDLE_RADIUS,
                 'circle-color': HANDLE_COLOR,
                 'circle-stroke-width': BORDER_THICKNESS,
-                'circle-stroke-color': BORDER_COLOR 
+                'circle-stroke-color': BORDER_COLOR
             }
         });
     };

@@ -68,7 +68,7 @@
         position: absolute;
         inset: 0;
         z-index: 10;
-        
+       
         /* Borders */
         border-radius: var(--holo-street-map__roundness);
         box-shadow:       0 0 var(--holo-street-map__border-glow-weak)   var(--holo-theme__glow-bright-weak),
