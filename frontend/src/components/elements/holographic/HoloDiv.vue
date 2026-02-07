@@ -26,10 +26,6 @@
     const width = computed(() => {
         return props.width ?? content?.value?.offsetWidth ?? 0;
     });
-
-    defineOptions({
-        inheritAttrs: false
-    });
 </script>
 
 <template>
@@ -184,7 +180,7 @@
         /* Position */
         position: absolute;
         inset: 0;
-        z-index: 10;
+        z-index: 1;
 
         /* Notifs */
         animation: blink-background var(--holo-div__notif-animation-speed) infinite;
@@ -269,7 +265,7 @@
         /* Position */
         position: absolute;
         inset: 0;
-        z-index: -10;
+        z-index: -1;
 
         /* Background */
         background: var(--holo-theme__background);
