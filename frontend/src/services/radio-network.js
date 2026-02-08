@@ -25,3 +25,43 @@ export function getBuildings(coordinates, page = 0) {
         }
     });
 }
+
+/**************
+| Roads speed |
+**************/
+
+const roadsClient = axios.create({
+    baseURL: 'https://overpass-api.de/api',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+});
+
+export function getRoads(coordinates) {
+    const bbox = `${coordinates.minLat},${coordinates.minLng},${coordinates.maxLat},${coordinates.maxLng}`;
+    const query = `[out:json][timeout:25];(way["highway"](${bbox}););out body;>;out skel qt;`;
+    return roadsClient.post('/interpreter', `data=${encodeURIComponent(query)}`);
+}
+
+/*********************
+| Population density |
+*********************/
+
+const populationClient = axios.create({
+    baseURL: 'https://geo.api.gouv.fr',
+    headers: { 'Content-Type': 'application/json' }
+});
+
+export function getPopulation(coordinates) {
+    // Calcul du centre de la bounding box pour interroger l'API
+    const centerLat = (coordinates.minLat + coordinates.maxLat) / 2;
+    const centerLng = (coordinates.minLng + coordinates.maxLng) / 2;
+
+    return populationClient.get('/communes', {
+        params: {
+            lat: centerLat,
+            lon: centerLng,
+            fields: 'nom,population,surface',
+            format: 'json',
+            geometry: 'centre'
+        }
+    });
+}

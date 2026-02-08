@@ -11,16 +11,16 @@
 
     // Map elements
     const mapRef = shallowRef(null);
+   
+    // CHANGED: Using bounds (SW/NE) instead of center/radius to allow asymmetric resizing
     const selection = ref({
-        center: null,
-        cornerLngLat: null,
-        radius: 100
+        bounds: null, // { sw: LngLat, ne: LngLat }
+        isMoving: false
     });
 
     // Movement tracking
-    const dragOffset = ref({ x: 0, y: 0 });
-    const mouseDownPos = ref({ x: 0, y: 0 });
-    const isMouseDown = ref(false);
+    const dragStartMousePos = ref({ x: 0, y: 0 });
+    const dragStartBounds = ref(null); // Stores bounds state at start of drag
 
     // Map layers
     const SRC_ID = 'selection-source';
@@ -34,6 +34,14 @@
     const PRE_MOVE_MAP     = 0x11;
     const MOVE_SELECTION   = 0x20;
     const RESIZE_SELECTION = 0x30;
+    const RESIZE_N         = 0x31;
+    const RESIZE_E         = 0x32;
+    const RESIZE_S         = 0x33;
+    const RESIZE_W         = 0x34;
+    const RESIZE_NE        = 0x35;
+    const RESIZE_NW        = 0x36;
+    const RESIZE_SE        = 0x37;
+    const RESIZE_SW        = 0x38;
     const stateInteraction = ref(IDLE);
 
     // Hovered state
@@ -64,6 +72,23 @@
     ************/
 
     /**
+     * Helper to get pixel coordinates of current bounds
+     */
+    function getSelectionPixels(map) {
+        if (!selection.value.bounds) return null;
+       
+        const sw = map.project(selection.value.bounds.sw);
+        const ne = map.project(selection.value.bounds.ne);
+
+        return {
+            left: Math.min(sw.x, ne.x),
+            right: Math.max(sw.x, ne.x),
+            top: Math.min(sw.y, ne.y),
+            bottom: Math.max(sw.y, ne.y)
+        };
+    }
+
+    /**
      * Update the cursor style based on the current states.
      * @param mousePoint - The current mouse position
      */
@@ -90,52 +115,34 @@
         }
 
         // 3. The selection is being resized
-        if (interaction === RESIZE_SELECTION) {
-            // Compute position
-            const center = map.project(selection.value.center);
-            const radius = selection.value.radius;
-            const distanceX = Math.abs(mousePoint.x - center.x);
-            const distanceY = Math.abs(mousePoint.y - center.y);
-            const overX = distanceX > radius - HANDLE_RADIUS;
-            const overY = distanceY > radius - HANDLE_RADIUS;
-
-            // 3.1. Cursor is in a corner
-            if (overX && overY) {
-                const rawDx = mousePoint.x - center.x;
-                const rawDy = mousePoint.y - center.y;
-                canvas.style.cursor = rawDx * rawDy > 0 ?
-                                      'nwse-resize' :
-                                      'nesw-resize';
-            }
-            // 3.2. Cursor is on left/right edge
-            else if (overX) {
-                canvas.style.cursor = 'ew-resize';
-            }
-            // 3.3. Cursor is on top/bottom edge
-            else {
-                canvas.style.cursor = 'ns-resize';
-            }
-
+        if ((interaction & 0xF0) === RESIZE_SELECTION) {
+                 if (interaction === RESIZE_N
+                  || interaction === RESIZE_S)   canvas.style.cursor = 'ns-resize';
+            else if (interaction === RESIZE_E
+                 ||  interaction === RESIZE_W)   canvas.style.cursor = 'ew-resize';
+            else if (interaction === RESIZE_NE
+                  || interaction === RESIZE_SW)  canvas.style.cursor = 'nesw-resize';
+            else if (interaction === RESIZE_NW
+                  || interaction === RESIZE_SE)  canvas.style.cursor = 'nwse-resize';
+           
             return;
         }
 
         // 4. No interaction is being performed
-        else {
-                 if (hovered === MAP
-                  && !selection.value.center) canvas.style.cursor = 'crosshair';
-            else if (hovered === MAP
-                  && selection.value.center)  canvas.style.cursor = 'crosshair';  // or 'grab' to indicate possible interaction
-            else if (hovered === SELECTION)   canvas.style.cursor = 'move';
-            else if (hovered === BORDER_T
-                  || hovered === BORDER_B)    canvas.style.cursor = 'ns-resize';
-            else if (hovered === BORDER_L
-                  || hovered === BORDER_R)    canvas.style.cursor = 'ew-resize';
-            else if (hovered === CORNER_TL
-                  || hovered === CORNER_BR)   canvas.style.cursor = 'nwse-resize';
-            else if (hovered === CORNER_TR
-                  || hovered === CORNER_BL)   canvas.style.cursor = 'nesw-resize';
-            else                              canvas.style.cursor = '';
-        }
+             if (hovered === MAP
+             && !selection.value.bounds) canvas.style.cursor = 'crosshair';
+        else if (hovered === MAP
+              && selection.value.bounds)  canvas.style.cursor = 'crosshair';
+        else if (hovered === SELECTION)   canvas.style.cursor = 'move';
+        else if (hovered === BORDER_T
+              || hovered === BORDER_B)    canvas.style.cursor = 'ns-resize';
+        else if (hovered === BORDER_L
+              || hovered === BORDER_R)    canvas.style.cursor = 'ew-resize';
+        else if (hovered === CORNER_TL
+              || hovered === CORNER_BR)   canvas.style.cursor = 'nwse-resize';
+        else if (hovered === CORNER_TR
+              || hovered === CORNER_BL)   canvas.style.cursor = 'nesw-resize';
+        else                              canvas.style.cursor = '';
     }
 
     /**
@@ -144,43 +151,46 @@
      */
     function updateHovered(mousePoint) {
         // If no selection, only the map can be hovered
-        if (!selection.value.center) {
+        if (!selection.value.bounds) {
             stateHovered.value = MAP;
             return;
         }
 
         // Retrieve variables for easier access
         const map = mapRef.value;
-        const center = map.project(selection.value.center);
-        const radius = selection.value.radius;
+        const px = getSelectionPixels(map);
         const { x: mouseX, y: mouseY } = mousePoint;
 
+        // Tolerances
+        const hr = HANDLE_RADIUS * 1.5; // Hitbox slightly larger for handles
+        const br = BORDER_THICKNESS + 5; // Hitbox for border
+
         // Corners
-             if (Math.abs(mouseX - (center.x - radius)) < HANDLE_RADIUS
-              && Math.abs(mouseY - (center.y - radius)) < HANDLE_RADIUS)       stateHovered.value = CORNER_TL;
-        else if (Math.abs(mouseX - (center.x + radius)) < HANDLE_RADIUS
-              && Math.abs(mouseY - (center.y - radius)) < HANDLE_RADIUS)       stateHovered.value = CORNER_TR;
-        else if (Math.abs(mouseX - (center.x - radius)) < HANDLE_RADIUS
-              && Math.abs(mouseY - (center.y + radius)) < HANDLE_RADIUS)       stateHovered.value = CORNER_BL;
-        else if (Math.abs(mouseX - (center.x + radius)) < HANDLE_RADIUS
-              && Math.abs(mouseY - (center.y + radius)) < HANDLE_RADIUS)       stateHovered.value = CORNER_BR;
+             if (Math.abs(mouseX - px.left) < hr
+              && Math.abs(mouseY - px.top) < hr)       stateHovered.value = CORNER_TL;
+        else if (Math.abs(mouseX - px.right) < hr
+              && Math.abs(mouseY - px.top) < hr)       stateHovered.value = CORNER_TR;
+        else if (Math.abs(mouseX - px.left) < hr
+              && Math.abs(mouseY - px.bottom) < hr)    stateHovered.value = CORNER_BL;
+        else if (Math.abs(mouseX - px.right) < hr
+              && Math.abs(mouseY - px.bottom) < hr)    stateHovered.value = CORNER_BR;
 
         // Edges
-        else if (Math.abs(mouseX - (center.x - radius)) < BORDER_THICKNESS
-              && Math.abs(mouseY - center.y) < radius)                      stateHovered.value = BORDER_L;
-        else if (Math.abs(mouseX - (center.x + radius)) < BORDER_THICKNESS
-              && Math.abs(mouseY - center.y) < radius)                      stateHovered.value = BORDER_R;
-        else if (Math.abs(mouseY - (center.y - radius)) < BORDER_THICKNESS
-              && Math.abs(mouseX - center.x) < radius)                      stateHovered.value = BORDER_T;
-        else if (Math.abs(mouseY - (center.y + radius)) < BORDER_THICKNESS
-              && Math.abs(mouseX - center.x) < radius)                      stateHovered.value = BORDER_B;
+        else if (Math.abs(mouseX - px.left) < br
+              && mouseY > px.top && mouseY < px.bottom)     stateHovered.value = BORDER_L;
+        else if (Math.abs(mouseX - px.right) < br
+              && mouseY > px.top && mouseY < px.bottom)     stateHovered.value = BORDER_R;
+        else if (Math.abs(mouseY - px.top) < br
+              && mouseX > px.left && mouseX < px.right)     stateHovered.value = BORDER_T;
+        else if (Math.abs(mouseY - px.bottom) < br
+              && mouseX > px.left && mouseX < px.right)     stateHovered.value = BORDER_B;
 
-        // Selection
-        else if (Math.abs(mouseX - center.x) < radius
-              && Math.abs(mouseY - center.y) < radius)                      stateHovered.value = SELECTION;
+        // Selection body
+        else if (mouseX > px.left && mouseX < px.right
+              && mouseY > px.top && mouseY < px.bottom)     stateHovered.value = SELECTION;
 
         // Map (default)
-        else                                                                stateHovered.value = MAP;
+        else                                                stateHovered.value = MAP;
     }
 
     /**
@@ -189,76 +199,73 @@
      */
     function updateMap(emitRequested = false) {
         // Skip if map or selection is not ready
-        if (!mapRef.value || !selection.value.center) return;
+        if (!mapRef.value || !selection.value.bounds) return;
 
         // Retrieve variables for easier access
         const map = mapRef.value;
         const source = map.getSource(SRC_ID);
-        const center = selection.value.center;
-        const radius = selection.value.radius;
-
+       
         // Skip if source layer is missing
         if (!source) return;
 
-        // 1. Calculate Geometry (Pixels -> LngLat)
-        const centerPx = map.project(center);
+        // 1. Calculate Geometry
+        // We use bounds to determine coordinates
+        const { sw, ne } = selection.value.bounds;
        
-        // Calculate the 4 corners in absolute pixels
-        const pxCoords = [
-            { x: centerPx.x - radius, y: centerPx.y - radius }, // TL
-            { x: centerPx.x + radius, y: centerPx.y - radius }, // TR
-            { x: centerPx.x + radius, y: centerPx.y + radius }, // BR
-            { x: centerPx.x - radius, y: centerPx.y + radius }  // BL
-        ];
-
-        // Convert back to GPS coordinates (LngLat)
-        const polyCoords = pxCoords.map(p => {
-            const ll = map.unproject([p.x, p.y]);
-            return [ll.lng, ll.lat];
-        });
-       
-        // Close the polygon loop
-        polyCoords.push(polyCoords[0]);
+        // Create polygon coordinates (CCW)
+        const polyCoords = [[
+            [sw.lng, ne.lat], // TL
+            [ne.lng, ne.lat], // TR
+            [ne.lng, sw.lat], // BR
+            [sw.lng, sw.lat], // BL
+            [sw.lng, ne.lat]  // Close loop
+        ]];
 
         // Create features for handles (corners)
-        const cornerFeatures = pxCoords.map(p => {
-            const ll = map.unproject([p.x, p.y]);
+        const cornerPoints = [
+            [sw.lng, ne.lat], // TL
+            [ne.lng, ne.lat], // TR
+            [ne.lng, sw.lat], // BR
+            [sw.lng, sw.lat]  // BL
+        ];
+
+        const cornerFeatures = cornerPoints.map(coord => {
             return {
                 type: 'Feature',
-                geometry: { type: 'Point', coordinates: [ll.lng, ll.lat] },
+                geometry: { type: 'Point', coordinates: coord },
                 properties: { type: 'corner' }
             };
         });
 
-        // 2. Update Zoom Reference
-        // Save the precise GPS position of a corner to recalculate radius on zoom
-        selection.value.cornerLngLat = map.unproject([
-            centerPx.x - radius,
-            centerPx.y - radius
-        ]);
-
-        // 3. Update MapLibre Source
+        // 2. Update MapLibre Source
         source.setData({
             type: 'FeatureCollection',
             features: [
                 {
                     type: 'Feature',
-                    geometry: { type: 'Polygon', coordinates: [polyCoords] },
+                    geometry: { type: 'Polygon', coordinates: polyCoords },
                     properties: { type: 'area' }
                 },
                 ...cornerFeatures
             ]
         });
 
-        // 4. Emit to parent if requested
+        // 3. Emit to parent if requested
         if (emitRequested) {
+            // Calculate an approximate pixel radius for compatibility
+            const centerLng = (sw.lng + ne.lng) / 2;
+            const centerLat = (sw.lat + ne.lat) / 2;
+            const centerPx = map.project([centerLng, centerLat]);
+            const cornerPx = map.project([ne.lng, ne.lat]);
+            const radius = Math.hypot(centerPx.x - cornerPx.x, centerPx.y - cornerPx.y);
+
             emit('area-changed', {
-                center: center,
+                center: { lng: centerLng, lat: centerLat },
                 coordinates: {
-                    minLng: polyCoords[0][0],
-                    minLat: polyCoords[2][1],
-                    maxLng: polyCoords[2][0],
-                    maxLat: polyCoords[0][1]
+                    minLng: sw.lng,
+                    minLat: sw.lat,
+                    maxLng: ne.lng,
+                    maxLat: ne.lat
                 },
                 pixelRadius: radius
             });
@@ -276,38 +283,43 @@
         // Retrieve variables for easier access
         const map = mapRef.value;
         const mouse = event.point;
-       
-        // Update values (1)
-        mouseDownPos.value = mouse;
-        isMouseDown.value = true;
+      
+        // Update values
         updateHovered(mouse);
 
         // Determine interaction type
-             if ((stateHovered.value & 0xF0) == BORDER
-              || (stateHovered.value & 0xF0) == CORNER)  stateInteraction.value = RESIZE_SELECTION;
-        else if (stateHovered.value === SELECTION)       stateInteraction.value = MOVE_SELECTION;
-        else                                             stateInteraction.value = PRE_MOVE_MAP;
+             if (stateHovered.value === BORDER_T)   stateInteraction.value = RESIZE_N;
+        else if (stateHovered.value === BORDER_B)   stateInteraction.value = RESIZE_S;
+        else if (stateHovered.value === BORDER_L)   stateInteraction.value = RESIZE_W;
+        else if (stateHovered.value === BORDER_R)   stateInteraction.value = RESIZE_E;
+        else if (stateHovered.value === CORNER_TL)  stateInteraction.value = RESIZE_NW;
+        else if (stateHovered.value === CORNER_TR)  stateInteraction.value = RESIZE_NE;
+        else if (stateHovered.value === CORNER_BL)  stateInteraction.value = RESIZE_SW;
+        else if (stateHovered.value === CORNER_BR)  stateInteraction.value = RESIZE_SE;
+        else if (stateHovered.value === SELECTION)  stateInteraction.value = MOVE_SELECTION;
+        else                                        stateInteraction.value = PRE_MOVE_MAP;
+
+        // Store initial positions for drag calculations
+        dragStartMousePos.value = mouse;
+        if (selection.value.bounds) {
+            // Clone the bounds object to avoid reference issues
+            dragStartBounds.value = {
+                sw: { ...selection.value.bounds.sw },
+                ne: { ...selection.value.bounds.ne }
+            };
+        }
 
         // Prepare interaction
         if (
-            stateInteraction.value === RESIZE_SELECTION ||
+            (stateInteraction.value & 0xF0) === RESIZE_SELECTION ||
             stateInteraction.value === MOVE_SELECTION
         ) {
             // Disable original map events
             event.preventDefault();
             map.dragPan.disable();
-
-            // Register drag offset for move interaction
-            if (stateInteraction.value === MOVE_SELECTION) {
-                const center = map.project(selection.value.center);
-                dragOffset.value = {
-                    x: center.x - mouse.x,
-                    y: center.y - mouse.y
-                };
-            }
         }
 
-        // Update values (2)
+        // Update cursor immediately
         updateCursor(mouse);
     };
 
@@ -320,22 +332,75 @@
         const mouse = event.point;
 
         // Resize selection
-        if (stateInteraction.value === RESIZE_SELECTION) {
-            const center = map.project(selection.value.center);
-            const distanceX = Math.abs(mouse.x - center.x);
-            const distanceY = Math.abs(mouse.y - center.y);
-            const newRadius = Math.max(distanceX, distanceY);
-            selection.value.radius = Math.max(newRadius, 20);
+        if ((stateInteraction.value & 0xF0) === RESIZE_SELECTION) {
+            // Get original bounds in pixels
+            const startSW = map.project(dragStartBounds.value.sw);
+            const startNE = map.project(dragStartBounds.value.ne);
+
+            // Establish current box edges in pixels
+            // Note: MapLibre Y coordinates increase downwards
+            let top = Math.min(startSW.y, startNE.y);
+            let bottom = Math.max(startSW.y, startNE.y);
+            let left = Math.min(startSW.x, startNE.x);
+            let right = Math.max(startSW.x, startNE.x);
+
+            // Apply modifications based on the active handle
+            // Only the side being dragged is updated, others remain fixed
+            if (stateInteraction.value === RESIZE_N  || stateInteraction.value === RESIZE_NW || stateInteraction.value === RESIZE_NE) {
+                top = mouse.y;
+            }
+            if (stateInteraction.value === RESIZE_S  || stateInteraction.value === RESIZE_SW || stateInteraction.value === RESIZE_SE) {
+                bottom = mouse.y;
+            }
+            if (stateInteraction.value === RESIZE_W  || stateInteraction.value === RESIZE_NW || stateInteraction.value === RESIZE_SW) {
+                left = mouse.x;
+            }
+            if (stateInteraction.value === RESIZE_E  || stateInteraction.value === RESIZE_NE || stateInteraction.value === RESIZE_SE) {
+                right = mouse.x;
+            }
+
+            // Safety: Ensure minimum size (10px)
+            if (right - left < 10) {
+                 if (stateInteraction.value === RESIZE_E || stateInteraction.value === RESIZE_NE || stateInteraction.value === RESIZE_SE) right = left + 10;
+                 else left = right - 10;
+            }
+            if (bottom - top < 10) {
+                if (stateInteraction.value === RESIZE_S || stateInteraction.value === RESIZE_SW || stateInteraction.value === RESIZE_SE) bottom = top + 10;
+                else top = bottom - 10;
+            }
+
+            // Convert back to LngLat
+            const newSW = map.unproject([left, bottom]); // Bottom-Left pixel is SW
+            const newNE = map.unproject([right, top]);   // Top-Right pixel is NE
+
+            selection.value.bounds = {
+                sw: newSW,
+                ne: newNE
+            };
+           
             updateMap();
         }
 
         // Move selection
         else if (stateInteraction.value === MOVE_SELECTION) {
-            const newCenter = {
-                x: mouse.x + dragOffset.value.x,
-                y: mouse.y + dragOffset.value.y
+            // Calculate delta in pixels
+            const dx = mouse.x - dragStartMousePos.value.x;
+            const dy = mouse.y - dragStartMousePos.value.y;
+
+            // Project start bounds to pixels
+            const pSW = map.project(dragStartBounds.value.sw);
+            const pNE = map.project(dragStartBounds.value.ne);
+
+            // Apply delta
+            const newPSW = { x: pSW.x + dx, y: pSW.y + dy };
+            const newPNE = { x: pNE.x + dx, y: pNE.y + dy };
+
+            // Unproject back
+            selection.value.bounds = {
+                sw: map.unproject(newPSW),
+                ne: map.unproject(newPNE)
             };
-            selection.value.center = map.unproject(newCenter);
+           
             updateMap();
         }
 
@@ -375,8 +440,14 @@
 
         // Create selection if a click (without movement) was performed on the map
         if (stateInteraction.value === PRE_MOVE_MAP) {
-            selection.value.center = event.lngLat;
-            selection.value.radius = 100;
+            // Create a default box around the click point
+            const radius = 100; // pixels
+            const center = map.project(event.lngLat);
+            
+            const sw = map.unproject([center.x - radius, center.y + radius]);
+            const ne = map.unproject([center.x + radius, center.y - radius]);
+
+            selection.value.bounds = { sw, ne };
             updateMap();
         }
 
@@ -384,35 +455,17 @@
         if (
             stateInteraction.value === PRE_MOVE_MAP ||
             stateInteraction.value === MOVE_SELECTION ||
-            stateInteraction.value === RESIZE_SELECTION
+            (stateInteraction.value & 0xF0) === RESIZE_SELECTION
         ) {
             updateMap(true);
         }
 
         // Update/reset values
-        isMouseDown.value = false;
         stateInteraction.value = IDLE;
+        dragStartBounds.value = null;
         map.dragPan.enable();
         updateHovered(mouse);
         updateCursor(mouse);
-    };
-
-    function onZoom() {
-        // Skip if map is not ready or no selection
-        if (
-            !selection.value.center ||
-            !mapRef.value
-        ) return;
-       
-        // Retrieve variables for easier access
-        const map = mapRef.value;
-
-        // Compute radius in pixels based on the distance between the center and corner
-        const centerPx = map.project(selection.value.center);
-        const cornerPx = map.project(selection.value.cornerLngLat);
-
-        // Update radius
-        selection.value.radius = Math.abs(centerPx.x - cornerPx.x);
     };
 
     /*************
@@ -480,7 +533,6 @@
         mapObject.on('mousemove', onMouseMove);
         mapObject.on('drag', onMapDrag);
         mapObject.on('mouseup', onMouseUp);
-        mapObject.on('zoom', onZoom);
     };
 </script>
 
