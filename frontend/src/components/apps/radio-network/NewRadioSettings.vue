@@ -48,7 +48,7 @@
         // Compute required parameters for the 5G network based on the fetched data and area size
         let                              scs =  '15 kHz';
         if (avgSpeedData.average >   50) scs =  '30 kHz';
-        if (avgSpeedData.average >=  80) scs =  '60 kHz';
+        if (avgSpeedData.top10   >=  80) scs =  '60 kHz';
         if (avgSpeedData.top10   >  110) scs = '120 kHz';
 
         let                                   bandwidth = '3.5 GHz';
@@ -56,8 +56,9 @@
         if (avgPopulationData.average > 1500
          && avgHeightData.average < 15)       bandwidth = '24 GHz'; // Official data for 'urban center' + low building heights
 
-        let                             mode = 'Normal'
-        if (width * height > 1) mode = 'Extended';  // If the area is bigger than 1 km², we switch to extended mode to increase the coverage radius of each antenna
+        let                            mode = 'Normal'
+        if (width * height > 1
+         || avgSpeedData.top10 >= 80)  mode = 'Extended';  // If the area is bigger than 1 km² or roads are at high speeds, we switch to extended mode to increase the coverage radius of each antenna
 
         // Update the displayed values
         if (id > maxId.value) {
