@@ -1,5 +1,4 @@
 import axios from 'axios'
-import proj4 from 'proj4';
 
 /*******************
 | Buildings height |
