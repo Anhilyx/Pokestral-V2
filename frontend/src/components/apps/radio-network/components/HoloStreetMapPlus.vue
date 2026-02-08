@@ -254,7 +254,12 @@
         if (emitRequested) {
             emit('area-changed', {
                 center: center,
-                coordinates: polyCoords,
+                coordinates: {
+                    minLng: polyCoords[0][0],
+                    minLat: polyCoords[2][1],
+                    maxLng: polyCoords[2][0],
+                    maxLat: polyCoords[0][1]
+                },
                 pixelRadius: radius
             });
         }
