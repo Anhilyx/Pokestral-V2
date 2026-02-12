@@ -17,3 +17,7 @@ export function calculateDamage_knownBoth(data) {
 export function calculateDamage_knownNone(data) {
     return apiClient.post('/damage-calculator/known-none', data);
 }
+
+export function getDefinition(name, category) {
+    return apiClient.post('/dictionnary', { name, category });
+}
