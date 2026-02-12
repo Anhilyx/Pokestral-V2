@@ -45,9 +45,10 @@
                 v-model="category"
                 @update:model-value="askDefinition()"
                 :items="[
-                    { title: '???',     value: null },
+                    { title: '???',     value: null      },
                     { title: 'Move',    value: 'move'    },
                     { title: 'Ability', value: 'ability' },
+                    { title: 'Item',    value: 'item'    },
                 ]"
             />
         </template>

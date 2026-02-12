@@ -1,7 +1,7 @@
 /**
  * Get the definition of a move/ability by its name and, optionally, its category.
- * @param {string} name - The name of the move/ability to look up.
- * @param {string|null} category - The category ('move', 'ability') to search in. If null, the function will automatically search across all categories.
+ * @param {string} name - The name of the move/ability/item to look up.
+ * @param {string|null} category - The category ('move', 'ability', 'item') to search in. If null, the function will automatically search across all categories.
  */
 export async function getDefinition(name, category) {
 
@@ -9,7 +9,7 @@ export async function getDefinition(name, category) {
     if (!category) {
         
         // Loop through all categories
-        const categories = ['move', 'ability'];
+        const categories = ['move', 'ability', 'item'];
         for (const cat of categories) {
 
             // Fetch the list of items in the current category
