@@ -4,6 +4,9 @@
  * @param {string|null} category - The category ('move', 'ability', 'item') to search in. If null, the function will automatically search across all categories.
  */
 export async function getDefinition(name, category) {
+    // ===== 0. Format data =====
+    name = name.trim().toLowerCase().replace(/\s+/g, '-');
+    category = category ? category.trim().toLowerCase() : null;
 
     // ===== 1. Search through all categories (if necessary) =====
     if (!category) {
@@ -18,7 +21,7 @@ export async function getDefinition(name, category) {
 
             // If the item is found, set the category and break out of the loop
             for (const item of items) {
-                if (item.name.toLowerCase() === name.toLowerCase()) {
+                if (item.name === name) {
                     category = cat;
                     break;
                 }
@@ -34,7 +37,7 @@ export async function getDefinition(name, category) {
     // ===== 2. Fetch the definition from the identified category =====
 
     // Fetch all the informations for the specified name in its category
-    const response = await fetch(`https://pokeapi.co/api/v2/${category}/${name.toLowerCase()}`);
+    const response = await fetch(`https://pokeapi.co/api/v2/${category}/${name}`);
 
     // If the item isn't found in the specified category, throw an error
     if (!response.ok)
