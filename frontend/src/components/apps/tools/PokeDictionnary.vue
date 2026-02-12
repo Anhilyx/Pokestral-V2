@@ -69,18 +69,12 @@
             <!-- Else show error/result -->
             <div v-else class="dictionnary__output-json">
                 <HoloTextArea
-                    class="monospace"
-                    :label="result ? 'Result JSON' : 'Error Message'"
-                    :model-value="JSON.stringify(result ?? error, null, 1)"
+                    :rows="10"
+                    :label="result ? 'Effect' : 'Error Message'"
+                    :model-value="result ?? error"
                     readonly
                 />
             </div>
         </template>
     </HoloApp>
 </template>
-
-<style scoped>
-    :deep(textarea) {
-        font-family: 'Courier New', Courier, monospace;
-    }
-</style>
