@@ -6,6 +6,11 @@ const routes = [
         name: 'tools',
         component: () => import('@/views/ToolsView.vue')
     },
+    {
+        path: '/poke-env',
+        name: 'poke-env',
+        component: () => import('@/views/PokeEnvView.vue')
+    },
 
     // Out of context, but it was funny to keep it
     {

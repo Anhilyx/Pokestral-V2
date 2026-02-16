@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI, HTTPException
 from game import Instance
-from models.battle import Pokemon as PokemonModel, Teams as TeamsModel, Terrain as TerrainModel
+from models.battle import Move as MoveModel, Pokemon as PokemonModel, Teams as TeamsModel, Terrain as TerrainModel, Turn as TurnModel
 
 
 app = FastAPI()
@@ -32,6 +32,39 @@ async def is_ready(uuid: str) -> bool:
 
     # Check if the instance is ready
     return instance.is_ready()
+
+
+@router.get("/turn")
+async def get_turn(uuid: str) -> TurnModel:
+    """
+    Get the current turn number in the battle.
+
+    Args:
+        uuid (str): The UUID of the instance to get the turn number from.
+    
+    Returns:
+        TurnModel: The current turn number in the battle.
+    
+    Raises:
+        HTTPException (404): If the provided UUID is invalid.
+        HTTPException (425): If the turn information is not available yet.
+        HTTPException (500): If there is an internal error with the turn information retrieval function.
+    """
+
+    # Retrieve the instance
+    instance = Instance.get(uuid)
+    if instance is None:
+        raise HTTPException(status_code=404, detail="Invalid instance UUID")
+
+    # Get the turn information
+    try:
+        turn = instance.get_turn()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    if turn is None:
+        raise HTTPException(status_code=425, detail="Turn information is not available yet")
+    
+    return TurnModel(turn=turn)
 
 
 @router.get("/terrain")
@@ -132,3 +165,69 @@ async def get_teams(uuid: str) -> TeamsModel:
         raise HTTPException(status_code=425, detail="Teams information is not available yet")
 
     return teams
+
+
+@router.get("/available-moves")
+async def get_available_moves(uuid: str) -> list[MoveModel]:
+    """
+    Get the list of the available moves for the active pokemon of the player.
+
+    Args:
+        uuid (str): The UUID of the instance to get the available moves from.
+    
+    Returns:
+        list[MoveModel]: The list of the available moves for the active pokemon of the player.
+
+    Raises:
+        HTTPException (404): If the provided UUID is invalid.
+        HTTPException (425): If the available moves information is not available yet.
+        HTTPException (500): If there is an internal error with the available moves informations retrieval function
+    """
+
+    # Retrieve the instance
+    instance = Instance.get(uuid)
+    if instance is None:
+        raise HTTPException(status_code=404, detail="Invalid instance UUID")
+
+    # Get the available moves information
+    try:
+        available_moves = instance.get_available_moves()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    if available_moves is None:
+        raise HTTPException(status_code=425, detail="Available moves information is not available yet")
+
+    return available_moves
+
+
+@router.get("/available-switches")
+async def get_available_switches(uuid: str) -> list[PokemonModel]:
+    """
+    Get the list of the available pokemons to switch to for the player.
+
+    Args:
+        uuid (str): The UUID of the instance to get the available switches from.
+    
+    Returns:
+        list[PokemonModel]: The list of the available pokemons to switch to for the player.
+
+    Raises:
+        HTTPException (404): If the provided UUID is invalid.
+        HTTPException (425): If the available switches information is not available yet.
+        HTTPException (500): If there is an internal error with the available switches informations retrieval function
+    """
+
+    # Retrieve the instance
+    instance = Instance.get(uuid)
+    if instance is None:
+        raise HTTPException(status_code=404, detail="Invalid instance UUID")
+
+    # Get the available switches information
+    try:
+        available_switches = instance.get_available_switches()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    if available_switches is None:
+        raise HTTPException(status_code=425, detail="Available switches information is not available yet")
+
+    return available_switches

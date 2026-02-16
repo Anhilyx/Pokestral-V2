@@ -9,6 +9,25 @@ from pydantic import BaseModel, ConfigDict
 from typing import ClassVar
 
 
+class Turn(BaseModel):
+    """
+    Represents the current turn number in a battle.
+
+    Attributes:
+        turn (int): The current turn number in the battle.
+    """
+
+    turn: int
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "turn": 5
+            }
+        }
+    )
+
+
 class Terrain(BaseModel):
     """
     Represents the terrain information of a battle, including global conditions (weather and fields) and side conditions (hazards, walls, ...) for both players.

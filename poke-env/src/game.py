@@ -1,5 +1,5 @@
 import asyncio
-from models.battle import Action as ActionModel, ActionMove, ActionSwitch, Pokemon as PokemonModel, Teams as TeamsModel, Terrain as TerrainModel
+from models.battle import Action as ActionModel, ActionMove, ActionSwitch, Move as MoveModel, Pokemon as PokemonModel, Teams as TeamsModel, Terrain as TerrainModel
 from os import getenv as env
 from poke_env import ServerConfiguration, AccountConfiguration
 from poke_env.battle import AbstractBattle
@@ -209,6 +209,32 @@ class Instance(Player):
             player=[PokemonModel.from_poke_env(pokemon) for pokemon in player_team],
             opponent=[PokemonModel.from_poke_env(pokemon) for pokemon in opponent_team]
         )
+    
+    def get_available_moves(self) -> list[MoveModel]:
+        """
+        Get the list of available moves for the active pokemon.
+
+        Returns:
+            list[MoveModel]: The list of available moves for the active pokemon.
+        """
+
+        if self.battle is None:
+            raise ValueError("Error while retrieving battle information")
+        
+        return [MoveModel.from_poke_env(move) for move in self.battle.available_moves]
+
+    def get_available_switches(self) -> list[PokemonModel]:
+        """
+        Get the list of available pokemons to switch to for the active pokemon.
+
+        Returns:
+            list[PokemonModel]: The list of available pokemons to switch to for the active pokemon.
+        """
+
+        if self.battle is None:
+            raise ValueError("Error while retrieving battle information")
+        
+        return [PokemonModel.from_poke_env(pokemon) for pokemon in self.battle.available_switches]
 
     def set_action(self, action: ActionModel):
         """

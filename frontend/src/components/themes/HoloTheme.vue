@@ -129,6 +129,19 @@
     | Styles |
     *********/
 
+    /***** HR *****/
+
+    :deep(hr) {
+        /* Separator style */
+        border-image: linear-gradient(90deg,
+            transparent                 0%,
+            var(--holo-theme__glow-bright-strong)  30%,
+            var(--holo-theme__glow-bright-weak)    70%,
+            transparent               100%
+        );
+        border-image-slice: 1;
+    }
+
     /***** VApp *****/
 
     :deep(.v-application) {
