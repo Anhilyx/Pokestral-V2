@@ -10,7 +10,7 @@ const ATTACKER_REPARTS = {
     "max-stats-atk":  {maxAtk: true,  maxSpa: false, nature: false},
     "max-stats-spa":  {maxAtk: false, maxSpa: true,  nature: false},
 
-    //                 🟢 ATK/SPA                    🔴 Nature
+    //                 🟢 ATK/SPA                    🟢 Nature
     "max-atk":        {maxAtk: true,  maxSpa: false, nature: true },
     "max-spa":        {maxAtk: false, maxSpa: true,  nature: true },
 };

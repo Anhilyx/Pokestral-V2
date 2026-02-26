@@ -235,6 +235,41 @@ class Instance(Player):
             raise ValueError("Error while retrieving battle information")
         
         return [PokemonModel.from_poke_env(pokemon) for pokemon in self.battle.available_switches]
+    
+    def get_available_mechanics(self) -> dict[str, bool]:
+        """
+        Get the list of available mechanics (e.g. mega evolution, z-move, ...) for the active pokemon.
+
+        Returns:
+            dict[str, bool]: A dictionary containing the available mechanics for the active pokemon, with the name of the mechanic as key and whether it is available or not as value.
+        """
+
+        if self.battle is None:
+            raise ValueError("Error while retrieving battle information")
+        
+        return {
+            "mega_evolve": self.battle.can_mega_evolve,
+            "z_move": self.battle.can_z_move,
+            "dynamax": self.battle.can_dynamax,
+            "terastallize": self.battle.can_tera
+        }
+    
+    def get_log(self) -> list[str]:
+        """
+        Get the battle log, which is a list of strings describing the events that happened in the battle so far.
+
+        Returns:
+            list[str]: The battle log.
+        """
+
+        if self.battle is None:
+            raise ValueError("Error while retrieving battle information")
+        
+        return [
+            "|".join(event)
+            for value in self.battle.observations.values()
+            for event in value.events
+        ]
 
     def set_action(self, action: ActionModel):
         """

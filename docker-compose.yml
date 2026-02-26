@@ -4,6 +4,15 @@ services:
   # Backends #
   #==========#
 
+  pokestral-agents:
+    build: /storage/pokestral-v2/agents
+    container_name: pokestral-agents
+    networks:
+      - internal
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
   pokestral-poke-env:
     build: /storage/pokestral-v2/poke-env
     container_name: pokestral-poke-env
@@ -41,8 +50,8 @@ services:
     container_name: pokestral-showdown
     networks:
       - internal
-    volumes:
-      - /storage/pokestral-v2/showdown:/app
+    #volumes:
+      #- /storage/pokestral-v2/showdown:/app
     restart: unless-stopped
 
   #===============#

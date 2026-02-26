@@ -1,0 +1,5 @@
+fastapi
+httpx
+langchain
+langchain-community
+langchain-ollama

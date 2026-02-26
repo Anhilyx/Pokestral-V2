@@ -231,3 +231,69 @@ async def get_available_switches(uuid: str) -> list[PokemonModel]:
         raise HTTPException(status_code=425, detail="Available switches information is not available yet")
 
     return available_switches
+
+
+@router.get("/available-mechanics")
+async def get_available_mechanics(uuid: str) -> dict[str, bool]:
+    """
+    Get the list of the available mechanics for the current turn.
+
+    Args:
+        uuid (str): The UUID of the instance to get the available mechanics from.
+    
+    Returns:
+        dict[str, bool]: The available mechanics for the current turn.
+
+    Raises:
+        HTTPException (404): If the provided UUID is invalid.
+        HTTPException (425): If the available mechanics information is not available yet.
+        HTTPException (500): If there is an internal error with the available mechanics informations retrieval function
+    """
+
+    # Retrieve the instance
+    instance = Instance.get(uuid)
+    if instance is None:
+        raise HTTPException(status_code=404, detail="Invalid instance UUID")
+
+    # Get the available mechanics information
+    try:
+        available_mechanics = instance.get_available_mechanics()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    if available_mechanics is None:
+        raise HTTPException(status_code=425, detail="Available mechanics information is not available yet")
+
+    return available_mechanics
+
+
+@router.get("/log")
+async def get_log(uuid: str) -> list[str]:
+    """
+    Get the battle log, which is a list of strings describing the events that happened during the battle.
+
+    Args:
+        uuid (str): The UUID of the instance to get the battle log from.
+    
+    Returns:
+        list[str]: The battle log, which is a list of strings describing the events that happened during the battle.
+
+    Raises:
+        HTTPException (404): If the provided UUID is invalid.
+        HTTPException (425): If the battle log information is not available yet.
+        HTTPException (500): If there is an internal error with the battle log informations retrieval function
+    """
+
+    # Retrieve the instance
+    instance = Instance.get(uuid)
+    if instance is None:
+        raise HTTPException(status_code=404, detail="Invalid instance UUID")
+
+    # Get the battle log information
+    try:
+        battle_log = instance.get_log()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    if battle_log is None:
+        raise HTTPException(status_code=425, detail="Battle log information is not available yet")
+
+    return battle_log
