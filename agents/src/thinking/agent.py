@@ -12,13 +12,14 @@ class Agent:
     Reflexion Agent for Pokemon Competitive Battles using LangChain and Ollama.
     """
 
-    def __init__(self, uuid: str, model_name: str):
+    def __init__(self, uuid: str, model_name: str, api_token: str):
         """
-        Initialize the Agent with a game UUID and the name of the Ollama model to use.
+        Initialize the Agent with a game UUID, the name of the Ollama model to use, and an API token.
 
         Args:
             uuid (str): Unique identifier for the game instance.
             model_name (str): The name of the Ollama model to use for the agent's reasoning.
+            api_token (str): API token for authenticating with the Ollama API.
         """
 
         # Initialize the game instance
@@ -28,9 +29,20 @@ class Agent:
         # Connect to the Ollama model
         self.llm = ChatOllama(
             model=model_name,
-            base_url="http://localhost:11434",
-            temperature=0,
-            format="json"
+            base_url="https://ollama.ai.anhilyx.fr",
+            keep_alive="5m",
+            sync_client_kwargs={
+                "headers": {
+                    "Authorization": f"Bearer {api_token}"
+                }
+            },
+            async_client_kwargs={
+                "headers": {
+                    "Authorization": f"Bearer {api_token}"
+                }
+            },
+
+            temperature=0
         )
         
         # Bind the available tools

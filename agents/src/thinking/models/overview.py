@@ -1,4 +1,4 @@
-from models.pokemon import PokemonDetails
+from thinking.models.pokemon import PokemonDetails
 from pydantic import BaseModel, Field
 
 

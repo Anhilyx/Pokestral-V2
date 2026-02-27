@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class Move(BaseModel):
@@ -35,6 +35,11 @@ class PokemonDetails(BaseModel):
     """
     A detailed summary of all pokemon's informations for battle.
     """
+
+    @field_validator('mega_evolved', mode='before')
+    @classmethod
+    def avoid_none_mega_evolve(cls, value):
+        return value or False
 
     name: str = Field(...,
         description="The name of the pokemon in english.")

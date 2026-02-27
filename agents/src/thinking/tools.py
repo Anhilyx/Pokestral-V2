@@ -4,7 +4,7 @@ from thinking.models.information import Damage, Definition
 from thinking.models.overview import AvailableActions, Overview, Teams
 
 
-HTTPX_CLIENT = httpx.AsyncClient()
+HTTPX_CLIENT = httpx.Client()
 POKE_ENV_URL = "http://pokestral-poke-env:8000/api/poke-env"
 TOOLS_URL = "http://pokestral-tools:8000/api/tools"
 
@@ -24,22 +24,20 @@ def get_match_overview(game_uuid: str) -> Overview:
     """
 
     # Fetch all required data
-    async def fetch_responses():
-        return await asyncio.gather(
-            HTTPX_CLIENT.get(
-                f"{POKE_ENV_URL}/look/turn",
-                params={"game_uuid": game_uuid}
-            ),
-            HTTPX_CLIENT.get(
-                f"{POKE_ENV_URL}/look/active-pokemons",
-                params={"game_uuid": game_uuid}
-            ),
-            HTTPX_CLIENT.get(
-                f"{POKE_ENV_URL}/look/terrain",
-                params={"game_uuid": game_uuid}
-            )
+    responses = [
+        HTTPX_CLIENT.get(
+            f"{POKE_ENV_URL}/look/turn",
+            params={"uuid": game_uuid}
+        ),
+        HTTPX_CLIENT.get(
+            f"{POKE_ENV_URL}/look/active-pokemons",
+            params={"uuid": game_uuid}
+        ),
+        HTTPX_CLIENT.get(
+            f"{POKE_ENV_URL}/look/terrain",
+            params={"uuid": game_uuid}
         )
-    responses = asyncio.run(fetch_responses())
+    ]
 
     # Check for HTTP errors or invalid responses and parse the results
     results = []
@@ -73,22 +71,20 @@ def get_available_actions(game_uuid: str) -> AvailableActions:
     """
 
     # Fetch all required data
-    async def fetch_responses():
-        return await asyncio.gather(
-            HTTPX_CLIENT.get(
-                f"{POKE_ENV_URL}/look/available-moves",
-                params={"game_uuid": game_uuid}
-            ),
-            HTTPX_CLIENT.get(
-                f"{POKE_ENV_URL}/look/available-switches",
-                params={"game_uuid": game_uuid}
-            ),
-            HTTPX_CLIENT.get(
-                f"{POKE_ENV_URL}/look/available-mechanics",
-                params={"game_uuid": game_uuid}
-            )
+    responses = [
+        HTTPX_CLIENT.get(
+            f"{POKE_ENV_URL}/look/available-moves",
+            params={"uuid": game_uuid}
+        ),
+        HTTPX_CLIENT.get(
+            f"{POKE_ENV_URL}/look/available-switches",
+            params={"uuid": game_uuid}
+        ),
+        HTTPX_CLIENT.get(
+            f"{POKE_ENV_URL}/look/available-mechanics",
+            params={"uuid": game_uuid}
         )
-    responses = asyncio.run(fetch_responses())
+    ]
 
     # Check for HTTP errors or invalid responses and parse the results
     results = []
@@ -99,8 +95,9 @@ def get_available_actions(game_uuid: str) -> AvailableActions:
     # Construct the AvailableActions object
     return AvailableActions(
         moves=[
-            move["move"]
+            move["name"]
             for move in results[0]
+            if move["pp"] > 0
         ],
         switches=[
             pokemon["name"]
@@ -129,10 +126,10 @@ def get_teams(game_uuid: str) -> Teams:
     """
 
     # Fetch all required data
-    response = asyncio.run(HTTPX_CLIENT.get(
+    response = HTTPX_CLIENT.get(
         f"{POKE_ENV_URL}/look/teams",
-        params={"game_uuid": game_uuid}
-    ))
+        params={"uuid": game_uuid}
+    )
 
     # Check for HTTP errors or invalid responses and parse the results
     response.raise_for_status()
@@ -163,14 +160,14 @@ def get_damages(move: str, attacker: str, defender: str) -> Damage:
 
     # Fetch all required data
     # TODO: Here, the known informations should be given (pokemons levels, player's pokemon set, ...)
-    response = asyncio.run(HTTPX_CLIENT.get(
+    response = HTTPX_CLIENT.get(
         f"{TOOLS_URL}/damage-calculator/known-none",
         params={
             "moves": [move],
             "attacker": attacker,
             "defender": defender
         }
-    ))
+    )
 
     # Check for HTTP errors or invalid responses and parse the results
     response.raise_for_status()
@@ -242,10 +239,10 @@ def get_definition(term: str) -> Definition:
     """
 
     # Fetch all required data
-    response = asyncio.run(HTTPX_CLIENT.get(
+    response = HTTPX_CLIENT.get(
         f"{TOOLS_URL}/dictionnary",
         params={"term": term}
-    ))
+    )
 
     # Check for HTTP errors or invalid responses and parse the results
     response.raise_for_status()
@@ -273,10 +270,10 @@ def get_log(game_uuid: str) -> list[str]:
     """
 
     # Fetch all required data
-    response = asyncio.run(HTTPX_CLIENT.get(
+    response = HTTPX_CLIENT.get(
         f"{POKE_ENV_URL}/look/log",
-        params={"game_uuid": game_uuid}
-    ))
+        params={"uuid": game_uuid}
+    )
 
     # Check for HTTP errors or invalid responses and parse the results
     response.raise_for_status()

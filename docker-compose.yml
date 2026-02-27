@@ -21,7 +21,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - PORT=8000
-      - SHOWDOWN_URL=showdown.pokestral.anhilyx.fr
+      - SHOWDOWN_URL=showdown.anhilyx.fr
     restart: unless-stopped
 
   pokestral-tools:
