@@ -6,7 +6,7 @@ from time import sleep
 
 
 MODEL_NAME = "mistral-nemo"
-MODEL_TOKEN = "your_ollama_api_token_here"
+MODEL_TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 
 

@@ -21,3 +21,13 @@ export function calculateDamage_knownNone(data) {
 export function getDefinition(name, category) {
     return apiClient.post('/dictionnary', { name, category });
 }
+
+export function getTypesTable() {
+    return apiClient.post('/types/all', {});
+}
+export function getSpecificTypeTable(name) {
+    return apiClient.post('/types/type', { name });
+}
+export function getPokemonTypeTable(name) {
+    return apiClient.post('/types/pokemon', { name });
+}
