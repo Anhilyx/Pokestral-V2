@@ -1,6 +1,6 @@
 from thinking.models.information import Damage, Definition
 from thinking.models.overview import Overview, AvailableActions, Teams
-from thinking.tools import get_match_overview, get_available_actions, get_teams, get_damages, get_definition, get_log
+from thinking.tools import get_match_overview, get_available_actions, get_teams, get_damages, get_definition, get_log, get_types_table, get_pokemon_type_table
 
 
 class Instance:
@@ -96,6 +96,32 @@ class Instance:
         """
 
         return get_log(self.uuid)
+    
+    def get_types_table(self) -> dict[str, dict[str, float]]:
+        """
+        Get the type effectiveness table, which is a dictionary containing, for each types, the effectiveness of an attack of this type against each types.
+
+        Returns:
+            dict[str, dict[str, float]]: The type effectiveness table, which is a dictionary containing, for each types, the effectiveness of an attack of this type against each types.
+        """
+    
+        return get_types_table()
+    
+    def get_pokemon_type_table(self, pokemon_name: str) -> dict[str, list[str]]:
+        """
+        Get the type table of a pokemon, which is a dictionary containing the efficiency of the attacks of the type(s) of the pokemon against each types, as well as the effectiveness of attacks against this pokemon.
+
+        Args:
+            pokemon_name (str): The name of the pokemon in english.
+
+        Raises:
+            httpx.HTTPError: If there is an error while fetching the data from the tools API or if the pokemon is not found in the tools database.
+
+        Returns:
+            dict[str, list[str]]: The type table of the pokemon, which is a dictionary containing the efficiency of the attacks of the type(s) of the pokemon against each types, as well as the effectiveness of attacks against this pokemon.
+        """
+    
+        return get_pokemon_type_table(pokemon_name)
     
     #======================#
     # Automated Retrievals #

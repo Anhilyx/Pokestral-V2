@@ -50,24 +50,42 @@ class Agent:
             StructuredTool.from_function(
                 func=self.game_instance.get_teams,
                 name="get_teams",
-                description="This tool allows you to get all the known informations about both teams. Use it if you need to check details about either team."
+                description="This tool allows you to get all the known informations about both teams. " + \
+                            "Use it if you need to check details about either team."
             ),
             StructuredTool.from_function(
                 func=self.game_instance.get_definition,
                 name="get_definition",
-                description=(
-                    "This tool allows you to get the exact definition of any move, ability or item. Use it if you're not 100% sure about any move, ability or item mentioned in the context. **Never try to guess the effect of a move, ability or item if you don't know it perfectly.**"
-                )
+                description="This tool allows you to get the exact definition of any move, ability or item. " + \
+                            "Use it whenever you see a move, an ability or an item you're not perfectly familiar with. " + \
+                            "Do not try to guess the effect of a move, ability or item if you don't know it perfectly."
             ),
             StructuredTool.from_function(
                 func=self.game_instance.get_damage_calculation,
                 name="get_damage_calculation",
-                description="This tool allows you to estimate the damage of an attack, based on different stats repartition of both the attacker and the defender. Use it to estimate the damage of either your or your opponent's attacks, in order to make informed decisions about the action to take."
+                description="This tool allows you to estimate the damage of an attack, based on different stats repartition of both the attacker and the defender. " + \
+                            "Use it whenever you think about using an attack, or whenever you think the opponent might use an attack against you. " + \
+                            "Never try to guess the damage of an attack, and never advise using a damaging move without checking its damages first."
             ),
             StructuredTool.from_function(
                 func=self.game_instance.get_log,
                 name="get_log",
-                description="This tool allows you to get the complete log of the battle, which is a list of strings describing the events that happened during the battle. You can use this tool to get an history of the entire match, and potentially analyse patterns in the opponent's playstyle, or reflect on your own previous actions."
+                description="This tool allows you to get the complete log of the battle, which is a list of strings describing the events that happened during the battle. " + \
+                            "You can use this tool to get an history of the entire match, and potentially analyse patterns in the opponent's playstyle, or reflect on your own previous actions."
+            ),
+            StructuredTool.from_function(
+                func=self.game_instance.get_types_table,
+                name="get_types_table",
+                description="This tool allows you to get the type effectiveness table, which is a dictionary containing, for each types, the effectiveness of an attack of this type against each types. " + \
+                            "Use this tool whenever you want to check generic types matchups. " + \
+                            "Do not try to guess type effectiveness if you don't know it perfectly."
+            ),
+            StructuredTool.from_function(
+                func=self.game_instance.get_pokemon_type_table,
+                name="get_pokemon_type_table",
+                description="This tool allows you to get the type table of a specific pokemon, which is a dictionary containing the efficiency of the attacks of the type(s) of the pokemon against each types, as well as the effectiveness of attacks against this pokemon. " + \
+                            "Use this tool whenever you need to check the type matchups of a specific pokemon. " + \
+                            "Do not try to guess type matchups if you don't know them perfectly."
             )
         ]
 

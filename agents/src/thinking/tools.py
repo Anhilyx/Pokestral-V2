@@ -280,3 +280,53 @@ def get_log(game_uuid: str) -> list[str]:
     data = response.json()
 
     return data
+
+
+def get_types_table() -> dict[str, dict[str, float]]:
+    """
+    Get the type effectiveness table, which is a dictionary containing, for each types, the effectiveness of an attack of this type against each types.
+
+    Raises:
+        httpx.HTTPError: If there is an error while fetching the data from the tools API.
+
+    Returns:
+        dict[str, dict[str, float]]: The type effectiveness table, which is a dictionary containing, for each types, the effectiveness of an attack of this type against each types.
+    """
+
+    # Fetch all required data
+    response = HTTPX_CLIENT.get(
+        f"{TOOLS_URL}/types/all"
+    )
+
+    # Check for HTTP errors or invalid responses and parse the results
+    response.raise_for_status()
+    data = response.json()
+
+    return data
+
+
+def get_pokemon_type_table(pokemon_name: str) -> dict[str, list[str]]:
+    """
+    Get the type table of a pokemon, which is a dictionary containing the efficiency of the attacks of the type(s) of the pokemon against each types, as well as the effectiveness of attacks against this pokemon.
+
+    Args:
+        pokemon_name (str): The name of the pokemon in english.
+
+    Raises:
+        httpx.HTTPError: If there is an error while fetching the data from the tools API or if the pokemon is not found in the tools database.
+
+    Returns:
+        dict[str, list[str]]: The type table of the pokemon, which is a dictionary containing the efficiency of the attacks of the type(s) of the pokemon against each types, as well as the effectiveness of attacks against this pokemon.
+    """
+
+    # Fetch all required data
+    response = HTTPX_CLIENT.get(
+        f"{TOOLS_URL}/types/pokemon",
+        params={"pokemon": pokemon_name}
+    )
+
+    # Check for HTTP errors or invalid responses and parse the results
+    response.raise_for_status()
+    data = response.json()
+
+    return data
