@@ -29,37 +29,46 @@ class Instance:
     # Raw Infos #
     #===========#
 
-    def get_overview(self) -> Overview:
+    def get_overview(self) -> Overview | str:
         """
         Get an overview of the current game state, including the turn number, the active pokemons (with their known details) and the state of the field.
 
         Returns:
-            Overview: An Overview object containing the overview of the game state.
+            Overview | str: An Overview object containing the overview of the game state, or an error message if the overview could not be retrieved.
         """
 
-        return get_match_overview(self.uuid)
+        try:
+            return get_match_overview(self.uuid)
+        except Exception as e:
+            return f"Error while fetching overview: {str(e)}"
     
-    def get_available_actions(self) -> AvailableActions:
+    def get_available_actions(self) -> AvailableActions | str:
         """
         Get the list of available actions for the current turn, with all the known details of each action.
 
         Returns:
-            AvailableActions: An AvailableActions object containing the list of available actions for the current turn.
+            AvailableActions | str: An AvailableActions object containing the list of available actions for the current turn, or an error message if the available actions could not be retrieved.
         """
 
-        return get_available_actions(self.uuid)
+        try:
+            return get_available_actions(self.uuid)
+        except Exception as e:
+            return f"Error while fetching available actions: {str(e)}"
     
-    def get_teams(self) -> Teams:
+    def get_teams(self) -> Teams | str:
         """
         Get the list of all pokemons in the teams of both players, with all the known details of each pokemon.
 
         Returns:
-            Teams: A Teams object containing the teams of both players.
+            Teams | str: A Teams object containing the teams of both players, or an error message if the teams could not be retrieved.
         """
 
-        return get_teams(self.uuid)
+        try:
+            return get_teams(self.uuid)
+        except Exception as e:
+            return f"Error while fetching teams: {str(e)}"
     
-    def get_damage_calculation(self, move: str, attacker: str, defender: str) -> Damage:
+    def get_damage_calculation(self, move: str, attacker: str, defender: str) -> Damage | str:
         """
         Get the damage calculation estimation for a given move, attacker and defender.
 
@@ -69,12 +78,15 @@ class Instance:
             defender (str): The name of the defending pokemon in english.
 
         Returns:
-            Damage: A Damage object containing the damage calculation for the given move, attacker and defender.
+            Damage | str: A Damage object containing the damage calculation for the given move, attacker and defender, or an error message if the damage calculation could not be retrieved.
         """
     
-        return get_damages(move, attacker, defender)
+        try:
+            return get_damages(move, attacker, defender)
+        except Exception as e:
+            return f"Error while fetching damage calculation: {str(e)}"
     
-    def get_definition(self, term: str) -> Definition:
+    def get_definition(self, term: str) -> Definition | str:
         """
         Get the precise definition of a given term.
 
@@ -82,32 +94,41 @@ class Instance:
             term (str): The term to get the definition of.
 
         Returns:
-            Definition: A Definition object containing the definition of the given term.
+            Definition | str: A Definition object containing the definition of the given term, or an error message if the definition could not be retrieved.
         """
 
-        return get_definition(term)
+        try:
+            return get_definition(term)
+        except Exception as e:
+            return f"Error while fetching definition: {str(e)}"
     
-    def get_log(self) -> list[str]:
+    def get_log(self) -> list[str] | str:
         """
         Get the log of the battle, which is a list of strings describing the events that happened during the battle.
 
         Returns:
-            list[str]: The log of the battle.
+            list[str] | str: The log of the battle, or an error message if the log could not be retrieved.
         """
 
-        return get_log(self.uuid)
+        try:
+            return get_log(self.uuid)
+        except Exception as e:
+            return f"Error while fetching log: {str(e)}"
     
-    def get_types_table(self) -> dict[str, dict[str, float]]:
+    def get_types_table(self) -> dict[str, dict[str, float]] | str:
         """
         Get the type effectiveness table, which is a dictionary containing, for each types, the effectiveness of an attack of this type against each types.
 
         Returns:
-            dict[str, dict[str, float]]: The type effectiveness table, which is a dictionary containing, for each types, the effectiveness of an attack of this type against each types.
+            dict[str, dict[str, float]] | str: The type effectiveness table, which is a dictionary containing, for each types, the effectiveness of an attack of this type against each types, or an error message if the table could not be retrieved.
         """
     
-        return get_types_table()
+        try:
+            return get_types_table()
+        except Exception as e:
+            return f"Error while fetching types table: {str(e)}"
     
-    def get_pokemon_type_table(self, pokemon_name: str) -> dict[str, list[str]]:
+    def get_pokemon_type_table(self, pokemon_name: str) -> dict[str, list[str]] | str:
         """
         Get the type table of a pokemon, which is a dictionary containing the efficiency of the attacks of the type(s) of the pokemon against each types, as well as the effectiveness of attacks against this pokemon.
 
@@ -118,10 +139,13 @@ class Instance:
             httpx.HTTPError: If there is an error while fetching the data from the tools API or if the pokemon is not found in the tools database.
 
         Returns:
-            dict[str, list[str]]: The type table of the pokemon, which is a dictionary containing the efficiency of the attacks of the type(s) of the pokemon against each types, as well as the effectiveness of attacks against this pokemon.
+            dict[str, list[str]] | str: The type table of the pokemon, which is a dictionary containing the efficiency of the attacks of the type(s) of the pokemon against each types, as well as the effectiveness of attacks against this pokemon, or an error message if the table could not be retrieved.
         """
     
-        return get_pokemon_type_table(pokemon_name)
+        try:
+            return get_pokemon_type_table(pokemon_name)
+        except Exception as e:
+            return f"Error while fetching pokemon type table: {str(e)}"
     
     #======================#
     # Automated Retrievals #

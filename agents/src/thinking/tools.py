@@ -6,7 +6,7 @@ from thinking.models.overview import AvailableActions, Overview, Teams
 
 HTTPX_CLIENT = httpx.Client()
 POKE_ENV_URL = "http://pokestral-poke-env:8000/api/poke-env"
-TOOLS_URL = "http://pokestral-tools:8000/api/tools"
+TOOLS_URL = "http://pokestral-tools:3001/api/tools"
 
 
 def get_match_overview(game_uuid: str) -> Overview:
@@ -239,9 +239,9 @@ def get_definition(term: str) -> Definition:
     """
 
     # Fetch all required data
-    response = HTTPX_CLIENT.get(
+    response = HTTPX_CLIENT.post(
         f"{TOOLS_URL}/dictionnary",
-        params={"term": term}
+        json={"name": term}
     )
 
     # Check for HTTP errors or invalid responses and parse the results
@@ -294,7 +294,7 @@ def get_types_table() -> dict[str, dict[str, float]]:
     """
 
     # Fetch all required data
-    response = HTTPX_CLIENT.get(
+    response = HTTPX_CLIENT.post(
         f"{TOOLS_URL}/types/all"
     )
 
@@ -320,9 +320,9 @@ def get_pokemon_type_table(pokemon_name: str) -> dict[str, list[str]]:
     """
 
     # Fetch all required data
-    response = HTTPX_CLIENT.get(
+    response = HTTPX_CLIENT.post(
         f"{TOOLS_URL}/types/pokemon",
-        params={"pokemon": pokemon_name}
+        json={"pokemon": pokemon_name}
     )
 
     # Check for HTTP errors or invalid responses and parse the results

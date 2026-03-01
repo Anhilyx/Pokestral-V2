@@ -103,6 +103,20 @@ class Agent:
                     3. Think about the possible actions you can take (e.g. which move to use, whether to switch, etc...) and their potential consequences.
                     4. Use the 'get_damage_calculation' tool to estimate the damage of either your or your opponent's attacks, in order to make informed decisions about the action to take.
                     5. Make your decision, and explain why this one is better, and why the other options are less good.
+                
+                    RULES:
+                    - If you find a move, ability or item in the context that you are not perfectly familiar with, use the 'get_definition' tool to get its exact definition. Do not try to guess its effect if you don't know it perfectly.
+                    - If you are thinking about using a damaging move, use the 'get_damage_calculation' tool to estimate its damage, and check if it's worth using or not. Never try to guess the damage of an attack, and never advise using a damaging move without checking its damages first.
+                    - If you are thinking about the opponent using a damaging move, use the 'get_damage_calculation' tool to estimate its damage, and check if you can survive it or not. Never try to guess the damage of an attack, and never assume you can survive an attack without checking its damages first.
+                    - If you need something involving the type effectiveness, use the 'get_types_table' or 'get_pokemon_type_table' tools. Do not try to guess type effectiveness if you don't know it perfectly.
+                    - Don't stop using tools just because you got an error. Use other tools, and you can retry a few times if you really need the information from a specific tool that is giving you errors.
+                
+                    STRATEGIC ADVICES:
+                    - Switching can be a powerful tool to gain momentum in a battle. However, if done badly, it can also backfire. So don't avoid switching because it will cost you a turn, but be also careful to not overuse it or use it inappropriately.
+                    - Always try to think about what your opponent might do on this turn, but also on the next turns (their game-plan). This way, you can understand what is their win-condition against you, and try to find ways to disrupt it if necessary.
+                
+                    ADDITIONAL INFORMATIONS:
+                    - The item 'unknown_item' means that you don't know if the pokemon is holding an item, and if so, which item it is. So no need to ask the definition of 'unknown_item'.
                 """.replace("    ", "")),
                 ("human", """
                     Here is the current game context in JSON format:
