@@ -51,6 +51,14 @@ export async function getDefinition(name, category) {
         }
     }
 
+    // If no English definition is found, search in the flavour_text_entries
+    const fallbackDefinitions = (await response.json()).flavor_text_entries;
+    for (const entry of fallbackDefinitions) {
+        if (entry.language.name === 'en') {
+            return entry.flavor_text;
+        }
+    }
+
     // If no English definition is found, throw an error
     throw new Error(`No definition found for ${name} in category ${category}.`);
 }
