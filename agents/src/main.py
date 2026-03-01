@@ -5,7 +5,9 @@ from thinking.agent import Agent
 from time import sleep
 
 
-MODEL_NAME = "mistral-nemo"
+# MODEL_NAME = "mistral-nemo"
+# MODEL_NAME = "mistral-small"
+MODEL_NAME = "qwen2.5:32b"
 MODEL_TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 
