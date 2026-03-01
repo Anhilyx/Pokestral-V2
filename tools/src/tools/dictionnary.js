@@ -42,9 +42,10 @@ export async function getDefinition(name, category) {
     // If the item isn't found in the specified category, throw an error
     if (!response.ok)
         throw new Error(`Failed to fetch definition for ${name} in category ${category}.`);
+    const data = await response.json();
 
     // Extract the definition from the response
-    const definitions = (await response.json()).effect_entries;
+    const definitions = data.effect_entries;
     for (const entry of definitions) {
         if (entry.language.name === 'en') {
             return entry.effect;
@@ -52,7 +53,7 @@ export async function getDefinition(name, category) {
     }
 
     // If no English definition is found, search in the flavour_text_entries
-    const fallbackDefinitions = (await response.json()).flavor_text_entries;
+    const fallbackDefinitions = data.flavor_text_entries;
     for (const entry of fallbackDefinitions) {
         if (entry.language.name === 'en') {
             return entry.flavor_text;
