@@ -1,5 +1,5 @@
 import json
-from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 from langchain_core.tools import StructuredTool
 from langchain_classic.agents.agent import AgentExecutor
 from langchain_classic.agents.tool_calling_agent.base import create_tool_calling_agent
@@ -14,33 +14,26 @@ class Agent:
 
     def __init__(self, uuid: str, model_name: str, api_token: str):
         """
-        Initialize the Agent with a game UUID, the name of the Ollama model to use, and an API token.
+        Initialize the Agent with a game UUID, the name of the OpenAI model to use, and an API token.
 
         Args:
             uuid (str): Unique identifier for the game instance.
-            model_name (str): The name of the Ollama model to use for the agent's reasoning.
-            api_token (str): API token for authenticating with the Ollama API.
+            model_name (str): The name of the OpenAI model to use for the agent's reasoning.
+            api_token (str): API token for authenticating with the OpenAI API.
         """
 
         # Initialize the game instance
         self.uuid = uuid
         self.game_instance = Instance(uuid)
         
-        # Connect to the Ollama model
-        self.llm = ChatOllama(
+        def get_api_token():
+            return api_token
+
+        # Connect to the OpenAI model
+        self.llm = ChatOpenAI(
             model=model_name,
-            base_url="https://ollama.ai.anhilyx.fr",
-            keep_alive="5m",
-            sync_client_kwargs={
-                "headers": {
-                    "Authorization": f"Bearer {api_token}"
-                }
-            },
-            async_client_kwargs={
-                "headers": {
-                    "Authorization": f"Bearer {api_token}"
-                }
-            },
+            base_url="https://llm.ai.anhilyx.fr",
+            api_key=get_api_token,
 
             temperature=0
         )
