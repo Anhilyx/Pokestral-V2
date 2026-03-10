@@ -1,5 +1,6 @@
 import json
 from langchain_openai import ChatOpenAI
+from langchain_core.rate_limiters import InMemoryRateLimiter
 from langchain_core.tools import StructuredTool
 from langchain_classic.agents.agent import AgentExecutor
 from langchain_classic.agents.tool_calling_agent.base import create_tool_calling_agent
@@ -28,12 +29,19 @@ class Agent:
         
         def get_api_token():
             return api_token
+        
+        ratel_limiter = InMemoryRateLimiter(
+            requests_per_second=1.0,
+            check_every_n_seconds=0.1,
+            max_bucket_size=1
+        )
 
         # Connect to the OpenAI model
         self.llm = ChatOpenAI(
             model=model_name,
             base_url="https://llm.ai.anhilyx.fr",
             api_key=get_api_token,
+            rate_limiter=ratel_limiter,
 
             temperature=0
         )

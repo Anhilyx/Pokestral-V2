@@ -8,9 +8,9 @@ from time import sleep
 # MODEL_NAME = "Mistral Nemo"
 # MODEL_NAME = "Mistral Small"
 # MODEL_NAME = "Qwen 2.5"
-MODEL_NAME = "Qwen 3.5 4B"
+# MODEL_NAME = "Qwen 3.5 4B"
+MODEL_NAME = "Mistral Large (Web)"
 MODEL_TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
 
 
 if __name__ == "__main__":
