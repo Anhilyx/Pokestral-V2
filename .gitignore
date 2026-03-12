@@ -23,4 +23,4 @@ node_modules/
 # Scrapping
 scraping/replays/
 scraping/stats/
-scraping/debug.py/
+scraping/lead_percentage.py/

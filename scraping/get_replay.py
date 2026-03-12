@@ -5,13 +5,12 @@ import os
 FORMAT = "gen9ou"
 RATING = 1300  # (optionnel)
 SLEEP = 0.5  # sec entre requêtes
-MAX_REPLAYS = 3000  # ← nombre de matchs voulus
-
+MAX_REPLAYS = 8000  # ← nombre de matchs voulus
 
 BASE_SEARCH = "https://replay.pokemonshowdown.com/search.json"
 BASE_REPLAY = "https://replay.pokemonshowdown.com"
 
-output_dir = "replays"
+output_dir = "replays/secondwave"
 os.makedirs(output_dir, exist_ok=True)
 
 def get_replays_page(page):
