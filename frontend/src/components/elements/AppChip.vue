@@ -121,7 +121,7 @@
 
         /* Animation */
         transition: all var(--animation-speed-fast);
-        
+       
         /* Event handling */
         position: relative;
     }
@@ -182,7 +182,7 @@
         background-color: var(--app-chip__chip-color-icon-background-on);
         color: var(--app-chip__chip-color-icon-on);
     }
-    
+   
     /* Off state */
     .app-chip.off {
         background-color:    var(--app-chip__chip-color-background-off);

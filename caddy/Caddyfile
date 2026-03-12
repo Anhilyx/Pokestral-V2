@@ -1,0 +1,17 @@
+http://showdown.anhilyx.fr {
+    reverse_proxy pokestral-showdown:8000
+}
+
+http://pokestral.anhilyx.fr {
+    handle /api/tools/* {
+        reverse_proxy pokestral-tools:3001
+    }
+
+    handle /api/poke-env/* {
+        reverse_proxy pokestral-poke-env:8000
+    }
+
+    handle {
+        reverse_proxy pokestral-frontend:80
+    }
+}

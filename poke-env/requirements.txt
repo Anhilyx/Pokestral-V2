@@ -1,0 +1,4 @@
+fastapi
+poke-env
+scalar_fastapi
+uvicorn

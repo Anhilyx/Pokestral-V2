@@ -1,14 +1,76 @@
 services:
 
-  pokestral-showdown:
-    build: scraping
-    container_name: pokestral-scraping
-    ports:
-      - "3110:8000"
+  #==========#
+  # Backends #
+  #==========#
+
+  pokestral-agents:
+    build: /storage/pokestral-v2/agents
+    container_name: pokestral-agents
     networks:
-      - pokestral-network
+      - internal
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  pokestral-poke-env:
+    build: /storage/pokestral-v2/poke-env
+    container_name: pokestral-poke-env
+    networks:
+      - internal
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=8000
+      - SHOWDOWN_URL=showdown.anhilyx.fr
+    restart: unless-stopped
+
+  pokestral-tools:
+    build: /storage/pokestral-v2/tools
+    container_name: pokestral-tools
+    networks:
+      - internal
+    restart: unless-stopped
+
+  #===========#
+  # Frontends #
+  #===========#
+
+  pokestral-frontend:
+    build:
+      context: /storage/pokestral-v2/frontend
+      args:
+        - VITE_API_URL=https://pokestral.anhilyx.fr
+    container_name: pokestral-frontend
+    networks:
+      - internal
+    restart: unless-stopped
+
+  pokestral-showdown:
+    build: /storage/pokestral-v2/showdown
+    container_name: pokestral-showdown
+    networks:
+      - internal
+    #volumes:
+      #- /storage/pokestral-v2/showdown:/app
+    restart: unless-stopped
+
+  #===============#
+  # Miscellaneous #
+  #===============#
+
+  pokestral-caddy:
+    image: caddy:latest
+    container_name: pokestral-caddy
+    networks:
+      - internal
+    ports:
+      - 10040:80
+    volumes:
+      - /storage/pokestral-v2/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - /storage/pokestral-v2/caddy/data:/data
+      - /storage/pokestral-v2/caddy/config:/config
     restart: unless-stopped
 
 networks:
-  pokestral-network:
+  internal:
     driver: bridge

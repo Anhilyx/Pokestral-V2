@@ -1,10 +1,33 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-    baseURL: 'https://pokestral.anhilyx.fr/api/tools',
+    baseURL: `${import.meta.env.VITE_API_URL ?? 'http://localhost:3001'}/api/tools`,
     headers: { 'Content-Type': 'application/json' }
 });
 
-export function calculateDamage(data) {
-    return apiClient.post('/damage-calculator', data);
+export function calculateDamage_knownAttacker(data) {
+    return apiClient.post('/damage-calculator/known-attacker', data);
+}
+export function calculateDamage_knownDefender(data) {
+    return apiClient.post('/damage-calculator/known-defender', data);
+}
+export function calculateDamage_knownBoth(data) {
+    return apiClient.post('/damage-calculator/known-both', data);
+}
+export function calculateDamage_knownNone(data) {
+    return apiClient.post('/damage-calculator/known-none', data);
+}
+
+export function getDefinition(name, category) {
+    return apiClient.post('/dictionnary', { name, category });
+}
+
+export function getTypesTable() {
+    return apiClient.post('/types/all', {});
+}
+export function getSpecificTypeTable(name) {
+    return apiClient.post('/types/type', { name });
+}
+export function getPokemonTypeTable(name) {
+    return apiClient.post('/types/pokemon', { name });
 }

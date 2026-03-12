@@ -129,6 +129,19 @@
     | Styles |
     *********/
 
+    /***** HR *****/
+
+    :deep(hr) {
+        /* Separator style */
+        border-image: linear-gradient(90deg,
+            transparent                 0%,
+            var(--holo-theme__glow-bright-strong)  30%,
+            var(--holo-theme__glow-bright-weak)    70%,
+            transparent               100%
+        );
+        border-image-slice: 1;
+    }
+
     /***** VApp *****/
 
     :deep(.v-application) {
@@ -139,7 +152,7 @@
 		background-color: var(--holo-theme__app-background-base);
 		background-image: var(--holo-theme__app-background-effect);
 		background-size: var(--holo-theme__app-background-effect-size) var(--holo-theme__app-background-effect-size);
-        
+       
         /* Background animation */
         animation: app-background-animation
                    calc(var(--holo-theme__app-background-effect-size) / 1px / var(--holo-theme__app-background-animation-speed) * 1s)
@@ -265,20 +278,20 @@
         --holo-theme__app-background-base: hsl(0, 0%, 5%);
         --holo-theme__app-background-effect-color: hsla(340, 100%, 65%, 0.13);
         --holo-theme__app-background-effect: radial-gradient(
-                                                 circle, 
+                                                 circle,
                                                  transparent                                16%,
                                                  var(--holo-theme__app-background-base) 18%
                                              ),
                                              radial-gradient(
-                                                 circle, 
-                                                 var(--holo-theme__pokeball-background-white)      4.5%, 
+                                                 circle,
+                                                 var(--holo-theme__pokeball-background-white)      4.5%,
                                                  var(--holo-theme__pokeball-background-black) 5.5% 6.5%,
                                                  transparent                                  7.5%
                                              ),
                                              linear-gradient(
-                                                 to bottom, 
-                                                 var(--holo-theme__pokeball-background-red)          48.75%, 
-                                                 var(--holo-theme__pokeball-background-black) 49.75% 50.25%, 
+                                                 to bottom,
+                                                 var(--holo-theme__pokeball-background-red)          48.75%,
+                                                 var(--holo-theme__pokeball-background-black) 49.75% 50.25%,
                                                  var(--holo-theme__pokeball-background-white) 51.25%
                                              );
         --holo-theme__app-background-effect-size: 280px;
@@ -288,15 +301,15 @@
 
         /* Pokeball background */
         --holo-theme__background: radial-gradient(
-                                  circle, 
-                                      white  0% 18%, 
-                                      black 22% 28%, 
+                                  circle,
+                                      white  0% 18%,
+                                      black 22% 28%,
                                       transparent 32%
                                   ),
                                   linear-gradient(
-                                      to bottom, 
-                                      red    0%  43%, 
-                                      black 47%  53%, 
+                                      to bottom,
+                                      red    0%  43%,
+                                      black 47%  53%,
                                       white 57% 100%
                                   );
         --holo-theme__background-opacity-low: 0.15;

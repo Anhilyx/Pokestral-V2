@@ -29,7 +29,7 @@
                 Math.log10(11.75 * sensorHeight.value), 2)
             - 4.97
         );
-        
+       
         else return (
             (1.1 * Math.log10(frequency.value) - 0.7) * sensorHeight.value
             - (1.56 * Math.log10(frequency.value) - 0.8)
@@ -46,7 +46,7 @@
             + 33.9 * Math.log10(frequency.value)
             - 13.82 * Math.log10(antennaHeight.value)
             - antennaHeightCorrection.value
-            + (44.9 - 6.55 * Math.log10(antennaHeight.value)) * Math.log10(distance.value) 
+            + (44.9 - 6.55 * Math.log10(antennaHeight.value)) * Math.log10(distance.value)
             + powerCorrection.value
         );
 

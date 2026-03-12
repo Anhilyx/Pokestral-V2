@@ -43,11 +43,11 @@
                 return props.allowZero ?
                     min.value - step.value :
                     min.value;
-            
+           
             // Handle overflow
             else if (model.value > props.max)
                 return max.value;
-            
+           
             // Normal case
             return Math.log10(model.value);
         },

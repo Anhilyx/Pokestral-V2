@@ -1,0 +1,6 @@
+fastapi
+httpx
+langchain
+langchain-community
+langchain-mistralai
+langchain-openai

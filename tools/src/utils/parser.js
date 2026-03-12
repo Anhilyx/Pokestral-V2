@@ -12,7 +12,7 @@ export function parseSmogonSet(setString) {
 
     // Split by lines
     const lines = setString.split('\n').map(line => line.trim());
-    
+   
     // Extract from first line
     const name = lines[0].match(/^\S+/)?.[0];
     const item = lines[0].match(/@(.*)$/)?.[1].trim();
@@ -96,7 +96,7 @@ export function parseSmogonSet(setString) {
     else if (data.ivs && Object.values(data.ivs).find(iv => iv < 0 || iv > 31))  // IVs validity
         throw new Error("Invalid set: IVs must be between 0 and 31.");
     else if (!data.moves || data.moves.length < 1 || data.moves.length > 4)  // Invalid number of moves
-        throw new Error("Invalid set: Pokemons must have between 1 and 4.");
+        throw new Error("Invalid set: Pokemons must have between 1 and 4 moves.");
 
     return data;
 }

@@ -2,6 +2,7 @@
 # Generic #
 #---------#
 
+.env
 .idea/
 .vscode/
 .DS_Store
@@ -12,9 +13,11 @@
 
 # Node.js
 node_modules/
+package-lock.json
 
 # Python
 .venv/
+__pycache__/
 
 #-----------------#
 # Module-Specific #
