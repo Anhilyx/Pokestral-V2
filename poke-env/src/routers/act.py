@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, FastAPI, HTTPException
 from game import Instance
 from models.battle import Action as ActionModel, ActionMove, ActionSwitch
@@ -39,6 +41,7 @@ async def act(uuid: str, data: ActionModel):
     try:
         instance.set_action(data)
     except ValueError as e:
+        logging.error(f"Error while setting action for instance {uuid}: {e}")
         raise HTTPException(status_code=403, detail=str(e))
     
     # Return a success, just for the sake of it

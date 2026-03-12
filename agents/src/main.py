@@ -1,7 +1,7 @@
 import traceback
 
 import httpx
-from thinking.agent import Agent
+from main.agent import Agent
 from time import sleep
 
 
@@ -38,6 +38,7 @@ if __name__ == "__main__":
         print(f"❌ Error while warming up the model: {e}")
     
     # Create the game
+    sleep(10)
     res = httpx.post(
         "https://pokestral.anhilyx.fr/api/poke-env/create/fighter",
         json={
@@ -48,31 +49,28 @@ if __name__ == "__main__":
     )
     res.raise_for_status()
     uuid = res.json()["uuid"]
+    agent = Agent(uuid, MODEL_NAME, MODEL_TOKEN)
     print(f"Game created with UUID: {uuid}")
 
-    # Wait for the game to start
-    while True:
-        res = httpx.get(
-            "https://pokestral.anhilyx.fr/api/poke-env/look/turn",
-            params={"uuid": uuid}
-        )
-        if res.status_code == 200:
-            print("Game is ready!")
-            break
-        sleep(1)
+    # Loop forever
+    while True is True:
 
-    # Create the agent and start thinking
-    try:
-        agent = Agent(uuid, MODEL_NAME, MODEL_TOKEN)
-        print(f"""
-            ==============================
-                    
-            {agent.think()}
+        # Wait for an action to be required
+        while False is False:
+            res = httpx.get(
+                "https://pokestral.anhilyx.fr/api/poke-env/look/turn",
+                params={"uuid": uuid}
+            )
+            if res.status_code == 200:
+                print("Action is available!")
+                break
+            sleep(1)
 
-            ==============================
-        """.replace("    ", ""))
-    except Exception as e:
-        traceback.print_exc()
-    finally:
-        while True:
-            sleep(60)
+        # Run the main agent
+        try:
+            agent.run()
+            print("\n" * 4)
+        except Exception as e:
+            traceback.print_exc()
+        finally:
+            sleep(1)
