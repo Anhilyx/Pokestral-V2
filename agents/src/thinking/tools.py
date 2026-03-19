@@ -1,4 +1,3 @@
-import asyncio
 import httpx
 from thinking.models.information import Damage, Definition
 from thinking.models.overview import AvailableActions, Overview, Teams

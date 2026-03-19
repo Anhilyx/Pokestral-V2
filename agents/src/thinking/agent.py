@@ -5,7 +5,11 @@ from langchain_core.tools import StructuredTool
 from langchain_classic.agents.agent import AgentExecutor
 from langchain_classic.agents.tool_calling_agent.base import create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
-from thinking.instance import Instance
+from thinking.models.overview import Teams
+from thinking.tools import get_available_actions, get_damages, get_definition, get_log, get_match_overview, get_pokemon_type_table, get_teams, get_types_table
+from threading import Thread
+from utils.json_to_markdown import to_table as json_to_table
+from utils.logging import LOGGER
 
 
 class Agent:
@@ -25,7 +29,6 @@ class Agent:
 
         # Initialize the game instance
         self.uuid = uuid
-        self.game_instance = Instance(uuid)
         
         def get_api_token():
             return api_token
@@ -45,121 +48,234 @@ class Agent:
 
             temperature=0
         )
+
+        # Retrieve and format the types table
+        types_table_json = get_types_table()
+        for typeAtk in types_table_json:
+            for typeDef in types_table_json[typeAtk]:
+                types_table_json[typeAtk][typeDef] = round(types_table_json[typeAtk][typeDef], 1)
+        types_table = json_to_table(types_table_json)
         
         # Bind the available tools
         self.tools = [
             StructuredTool.from_function(
-                func=self.game_instance.get_teams,
-                name="get_teams",
-                description="This tool allows you to get all the known informations about both teams. " + \
-                            "Use it if you need to check details about either team."
+                func=self.get_detailed_teams,
+                name="get_detailed_teams",
+                description="Tool to get **all** the *known* information about both teams, including the stats, moves, abilities, items, etc... of each pokemon. " + \
+                            "You can use it if you need to check details about pokemons that aren't currently on the field, usually to anticipate a switch."
             ),
             StructuredTool.from_function(
-                func=self.game_instance.get_definition,
-                name="get_definition",
-                description="This tool allows you to get the exact definition of any move, ability or item. " + \
-                            "Use it whenever you see a move, an ability or an item you're not perfectly familiar with. " + \
-                            "Do not try to guess the effect of a move, ability or item if you don't know it perfectly."
+                func=self.get_combat_log,
+                name="get_combat_log",
+                description="Tool to get the complete log of the battle. Each line of the log is represented as a structured string. " + \
+                            "You can use it to get an history of the entire match, and potentially analyse patterns in the opponent's playstyle or reflect on your own previous actions."
             ),
             StructuredTool.from_function(
-                func=self.game_instance.get_damage_calculation,
-                name="get_damage_calculation",
-                description="This tool allows you to estimate the damage of an attack, based on different stats repartition of both the attacker and the defender. " + \
-                            "Use it whenever you think about using an attack, or whenever you think the opponent might use an attack against you. " + \
-                            "Never try to guess the damage of an attack, and never advise using a damaging move without checking its damages first."
+                func=self.get_definitions,
+                name="get_definitions",
+                description="Tool to get the exact definition of moves, abilities and items. " + \
+                            "You **must** use it whenever you see a moves/abilities/items you're not perfectly familiar with. " + \
+                            "Do not try to guess the effect of a move, ability or item."
             ),
             StructuredTool.from_function(
-                func=self.game_instance.get_log,
-                name="get_log",
-                description="This tool allows you to get the complete log of the battle, which is a list of strings describing the events that happened during the battle. " + \
-                            "You can use this tool to get an history of the entire match, and potentially analyse patterns in the opponent's playstyle, or reflect on your own previous actions."
+                func=self.get_types_tables,
+                name="get_types_tables",
+                description="Tool to get the type effectiveness table against every pokemon in the battle, in a markdown format. " + \
+                            "You **must** use it to know the precise weaknesses and resistances of each pokemon. " + \
+                            "Do not try to guess the weaknesses and resistances of any pokemon."
             ),
-            StructuredTool.from_function(
-                func=self.game_instance.get_types_table,
-                name="get_types_table",
-                description="This tool allows you to get the type effectiveness table, which is a dictionary containing, for each types, the effectiveness of an attack of this type against each types. " + \
-                            "Use this tool whenever you want to check generic types matchups. " + \
-                            "Do not try to guess type effectiveness if you don't know it perfectly."
-            ),
-            StructuredTool.from_function(
-                func=self.game_instance.get_pokemon_type_table,
-                name="get_pokemon_type_table",
-                description="This tool allows you to get the type table of a specific pokemon, which is a dictionary containing the efficiency of the attacks of the type(s) of the pokemon against each types, as well as the effectiveness of attacks against this pokemon. " + \
-                            "Use this tool whenever you need to check the type matchups of a specific pokemon. " + \
-                            "Do not try to guess type matchups if you don't know them perfectly."
-            )
+            # StructuredTool.from_function(
+            #     func=self.game_instance.get_damage_calculation,
+            #     name="get_damage_calculation",
+            #     description="This tool allows you to estimate the damage of an attack, based on different stats repartition of both the attacker and the defender. " + \
+            #                 "Use it whenever you think about using an attack, or whenever you think the opponent might use an attack against you. " + \
+            #                 "Never try to guess the damage of an attack, and never advise using a damaging move without checking its damages first."
+            # ),
         ]
 
         # Create the agent and its executor (the thinking loop)
         self.agent = AgentExecutor(
             agent=create_tool_calling_agent(self.llm, self.tools, ChatPromptTemplate.from_messages([
-                ("system", """
+                ("system", f"""
                     You are a professional Pokemon competitive player, and you are currently playing a match.
                     Your goal is to select the best possible action for the current turn, and to explain why this one and not another.
-                    You have access to several tools that can help you make informed decisions.
-
-                    THINKING PROCESS :
-                    1. Analyse the current game state based on the provided context, and identify the key factors that should influence your decision (e.g. the health of your Pokemon, the possible threats from the opponent, the available moves, etc...).
-                    2. If you see a move, ability or item that you are not 100% sure about, use the 'get_definition' tool. Never try to guess the effect of a move, ability or item if you don't know it perfectly.
-                    3. Think about the possible actions you can take (e.g. which move to use, whether to switch, etc...) and their potential consequences.
-                    4. Use the 'get_damage_calculation' tool to estimate the damage of either your or your opponent's attacks, in order to make informed decisions about the action to take.
-                    5. Make your decision, and explain why this one is better, and why the other options are less good.
-                
-                    RULES:
-                    - If you find a move, ability or item in the context that you are not perfectly familiar with, use the 'get_definition' tool to get its exact definition. Do not try to guess its effect if you don't know it perfectly.
-                    - If you are thinking about using a damaging move, use the 'get_damage_calculation' tool to estimate its damage, and check if it's worth using or not. Never try to guess the damage of an attack, and never advise using a damaging move without checking its damages first.
-                    - If you are thinking about the opponent using a damaging move, use the 'get_damage_calculation' tool to estimate its damage, and check if you can survive it or not. Never try to guess the damage of an attack, and never assume you can survive an attack without checking its damages first.
-                    - If you need something involving the type effectiveness, use the 'get_types_table' or 'get_pokemon_type_table' tools. Do not try to guess type effectiveness if you don't know it perfectly.
-                    - Don't stop using tools just because you got an error. Use other tools, and you can retry a few times if you really need the information from a specific tool that is giving you errors.
+                    You have access to several tools that can/must help you make informed decisions.
                 
                     STRATEGIC ADVICES:
-                    - Switching can be a powerful tool to gain momentum in a battle. However, if done badly, it can also backfire. So don't avoid switching because it will cost you a turn, but be also careful to not overuse it or use it inappropriately.
-                    - Always try to think about what your opponent might do on this turn, but also on the next turns (their game-plan). This way, you can understand what is their win-condition against you, and try to find ways to disrupt it if necessary.
+                    - You can switch OR use a move. Always take this into account, and don't instantly overshadow one possibility over the other.
+                    - You must think about what will your opponent do on the current turn, but also try to think about their next turns (their game-plan), and include this in your reasoning.
                 
                     ADDITIONAL INFORMATIONS:
-                    - The item 'unknown_item' means that you don't know if the pokemon is holding an item, and if so, which item it is. So no need to ask the definition of 'unknown_item'.
+                    - The item 'unknown_item' means that you don't know if and which item the pokemon is holding. So no need to ask the definition of 'unknown_item'.
+                    - If a tool fails, stop using it and try to make due without it, as best as you can. However, you must take this failure into account in your reasoning, considering the result 'unknown'.
+
+                    TYPES TABLE:
+                    {types_table}
                 """.replace("    ", "")),
                 ("human", """
                     Here is the current game context in JSON format:
                     {match_context}
-                    
-                    What's the best action to take for this turn, and why?
                 """.replace("    ", "")),
+                ("human", """
+                    {comments}
+                    What's the best action to take for this turn, and why?
+                """),
                 ("placeholder", "{agent_scratchpad}"),
             ])),
             tools=self.tools,
             verbose=True,
-            max_iterations=50,
+            max_iterations=10,
             handle_parsing_errors=True
         )
 
-    def think(self, event_type: str = "new_turn") -> str:
+    def think(self, comments: str = "") -> str:
         """
         Main thinking loop of the agent. It retrieves the current game context, feeds it to the LLM, and processes the response.
 
         Args:
-            event_type (str): The type of event that triggered the thinking process. It can be "start", "new_turn", "player_fainted", or "opponent_fainted". This allows the agent to adapt its context retrieval based on the game state.
+            comments (str, optional): Additional comments or instructions to guide the agent's reasoning. Defaults to "".
 
         Returns:
             str: The final decision of the agent with its reasoning.
         """
 
         # Retrieve the current game context based on the event type
-        context_data = {}
-        if event_type == "start":
-            context_data = self.game_instance.on_game_start()
-        elif event_type == "new_turn":
-            context_data = self.game_instance.on_new_turn()
-        elif event_type == "player_fainted":
-            context_data = self.game_instance.on_player_fainted()
-        elif event_type == "opponent_fainted":
-            context_data = self.game_instance.on_opponent_fainted()
-        context_str = json.dumps(context_data, default=lambda o: o.__dict__, indent=2)
+        overview = get_match_overview(self.uuid)
+        teams = get_teams(self.uuid)
+        actions = get_available_actions(self.uuid)
+
+        # Format the data into a string
+        context_str = f"""
+            ### Your team
+
+            Active Pokemon: {json.dumps(overview.player_pokemons[0].model_dump(), indent=2)}
+            Team: {json.dumps([pokemon.name for pokemon in teams.player_team], indent=2)}
+
+            ### Opponent's team
+
+            Active Pokemon: {json.dumps(overview.opponent_pokemons[0].model_dump(), indent=2)}
+            Team: {json.dumps([pokemon.name for pokemon in teams.opponent_team], indent=2)}
+
+            ### Field
+
+            Affecting your side: {json.dumps(overview.player_field, indent=2)}
+            Affecting opponent's side: {json.dumps(overview.opponent_field, indent=2)}
+            Affecting both sides: {json.dumps(overview.global_field, indent=2)}
+
+            ---
+
+            ### The actions you can choose for this turn
+
+            Moves: {json.dumps(actions.moves, indent=2)}
+            Switches: {json.dumps(actions.switches, indent=2)}
+        """.replace("    ", "")
 
         # Thinking loop
         response = self.agent.invoke({
-            "match_context": context_str
+            "match_context": context_str,
+            "comments": comments
         })
 
         # Return the final decision (the "output" field of the response)
         return response["output"]
+    
+    #=======#
+    # Tools #
+    #=======#
+
+    def get_detailed_teams(self) -> Teams:
+        """
+        Tool to get **all** the *known* information about both teams, including the stats, moves, abilities, items, etc... of each pokemon.
+
+        Returns:
+            Teams: A dataclass containing detailed information about both teams.
+        """
+
+        LOGGER.info("🔄 Fetching detailed teams information...")
+        LOGGER.info("✅ Done.")
+
+        return get_teams(self.uuid)
+    
+    def get_combat_log(self) -> list[str]:
+        """
+        Tool to get the complete log of the battle. Each line of the log is represented as a structured string.
+
+        Returns:
+            list[str]: The combat log of the battle.
+        """
+
+        LOGGER.info("🔄 Fetching combat log...")
+        LOGGER.info("✅ Done.")
+
+        return get_log(self.uuid)
+
+    def get_definitions(self, names: list[str]) -> dict[str, str]:
+        """
+        Tool to get the exact definition of moves, abilities and items.
+
+        Args:
+            names (list[str]): A list of names of moves, abilities and/or items to get the definitions of.
+
+        Returns:
+            dict[str, str]: A dictionary mapping each name to its definition.
+        """
+
+        LOGGER.info(f"🔄 Fetching definitions for {len(names)} names...")
+        LOGGER.debug(f"ℹ️ Names: {names}")
+
+        # Prepare values
+        threads = []
+        definitions = { name: "???" for name in names }
+        def get_definition_thread(name):
+            definitions[name] = get_definition(name).description
+
+        # Fetch definitions in parallel
+        for name in names:
+            thread = Thread(target=get_definition_thread, args=(name,))
+            thread.start()
+            threads.append(thread)
+        for thread in threads:
+            thread.join()
+
+        # Return the definitions
+        LOGGER.info("✅ Done.")
+        return definitions
+    
+    def get_types_tables(self) -> str:
+        """
+        Tool to get the type effectiveness table against every pokemon in the battle, in a markdown format.
+
+        Returns:
+            str: A markdown table showing the type effectiveness of each type against every pokemon in the battle.
+        """
+
+        LOGGER.info("🔄 Fetching type tables...")
+
+        # Retrieve the current teams to get the types of each pokemon
+        teams = get_teams(self.uuid)
+        pokemons = set([ pokemon.name for pokemon in teams.player_team + teams.opponent_team ])
+
+        # Retrieve the list of types
+        types = get_types_table().keys()
+
+        # Prepare values
+        types_tables = { pokemon: { type: "???" for type in types } for pokemon in pokemons }
+        def get_types_table_thread(pokemon):
+            data: dict[str, float] = get_pokemon_type_table(pokemon)["defending"] # type: ignore
+            for typeAtk in data.keys():
+                data[typeAtk] = round(data[typeAtk], 1)
+            types_tables[pokemon] = { type: str(data[type]) for type in types }
+
+        # Fetch types tables in parallel
+        threads = []
+        for pokemon in pokemons:
+            thread = Thread(target=get_types_table_thread, args=(pokemon,))
+            thread.start()
+            threads.append(thread)
+        for thread in threads:
+            thread.join()
+
+        # Return the types tables
+        LOGGER.info("✅ Done.")
+        return json_to_table(types_tables)
+        

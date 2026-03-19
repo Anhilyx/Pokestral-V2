@@ -1,16 +1,14 @@
 import httpx
-import json
 from langchain_openai import ChatOpenAI
 from langchain_core.rate_limiters import InMemoryRateLimiter
 from langchain_core.tools import StructuredTool
 from langchain_classic.agents.agent import AgentExecutor
 from langchain_classic.agents.tool_calling_agent.base import create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
-import logging
 from main.models.response import Action
-import re
 from thinking.agent import Agent as ThinkingAgent
 import traceback
+from utils.logging import LOGGER
 
 
 class Agent:
@@ -74,71 +72,27 @@ class Agent:
 
                 #     RULES:
                 #     - You **MUST** call every agents at least once.
-                 
-                #     STRUCTURE:
-                #     You **MUST** answer using one of the following structures:
-                #     1. If you want to use a move:
-                #     ```json
-                #     {{
-                #         "move": "move_name",
-                #         "use_mega_evolution": true/false,
-                #         "use_z_move": true/false,
-                #         "use_dynamax": true/false,
-                #         "use_terastallization": true/false
-                #     }}
-                #     ```
-                #     2. If you want to switch:
-                #     ```json
-                #     {{
-                #         "pokemon": "pokemon_name"
-                #     }}
-                #     ```
                 # """.replace("    ", "")),
                 ("system", """
                     You are a professional Pokemon competitive player, and you are currently playing a match.
                     You must carefully analyze the game state before making any decision.
-
-                    RULES:
-                    - You **MUST** use the `ask_thoughts` tool to analyze the situation before taking any action.
-                    - Once you have the results from the `ask_thoughts` tool, you must output your final decision strictly in JSON format. Do not add any conversational text.
-                    
-                    STRUCTURE:
-                    You **MUST** answer using ONE of the following JSON structures enclosed in a json markdown block:
-                    
-                    1. If you want to use a move:
-                    ```json
-                    {{
-                        "move": "move_name",
-                        "use_mega_evolution": true/false,
-                        "use_z_move": true/false,
-                        "use_dynamax": true/false,
-                        "use_terastallization": true/false
-                    }}
-                    ```
-                    2. If you want to switch:
-                    ```json
-                    {{
-                        "pokemon": "pokemon_name"
-                    }}
-                    ```
+                """.replace("    ", "")),
+                ("human", """
+                    ---
+                 
+                    ### Response from the 'thinking' agent:
+                 
+                    {initial_thoughts}
+                 
+                    ---
                 """.replace("    ", "")),
                 ("placeholder", "{agent_scratchpad}"),
             ])),
             tools=self.tools,
             verbose=True,
-            max_iterations=50,
+            max_iterations=10,
             handle_parsing_errors=True
         )
-
-    def think(self) -> str:
-        """
-        Ask the thinking Agent to think about the best action to take, in a logical and reasoned way, based on the current game context.
-
-        Returns:
-            str: The final decision of the agent with its reasoning.
-        """
-
-        return self.thinking_agent.think()
     
     def run(self):
         """
@@ -146,9 +100,16 @@ class Agent:
         """
 
         try:
+            # Ask the sub-agents a first time before starting
+            LOGGER.info(f"🔄 Asking for thoughts...")
+            initial_thoughts = self.thinking_agent.think()
+            LOGGER.info("✅ Done.")
+
             # Invoke the agent to get the best action to take
-            response = self.agent.invoke({})["output"]
-            logging.info(response)
+            response = self.agent.invoke({
+                "initial_thoughts": initial_thoughts
+            })["output"]
+            LOGGER.info(response)
 
             # Convert the response to a JSON object
             structured_llm = self.llm.with_structured_output(Action)
@@ -173,3 +134,31 @@ class Agent:
 
         except Exception as e:
             traceback.print_exc()
+
+    #=======#
+    # Tools #
+    #=======#
+
+    
+    def think(self) -> str:
+        """
+        Ask the thinking Agent to think about the best action to take, in a logical and reasoned way, based on the current game context.
+
+        Returns:
+            str: The final decision of the agent with its reasoning.
+        """
+
+        LOGGER.info(f"🔄 Asking for thoughts...")
+        # if comments: LOGGER.debug(f"ℹ️ Comments: {comments}")
+
+        reasoning = self.thinking_agent.think()
+        LOGGER.info(f"""
+        ==============================
+
+        {reasoning}
+
+        ==============================
+        """.replace("    ", ""))
+
+        LOGGER.info("✅ Done.")
+        return reasoning

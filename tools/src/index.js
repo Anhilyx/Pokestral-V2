@@ -85,7 +85,7 @@ apiRouter.post('/dictionnary', async (req, res) => {
 // Endpoint to get the entire types table for a given generation (or the latest if not specified)
 apiRouter.post('/types/all', (req, res) => {
     try {
-        const gen = req.body.gen;
+        const gen = req.body?.gen;
         const result = getTypesTable(gen);
         res.json(result);
     } catch (err) {

@@ -1,9 +1,8 @@
-import traceback
-
 import httpx
 from main.agent import Agent
 from time import sleep
-
+import traceback
+from utils.logging import LOGGER
 
 # MODEL_NAME = "Mistral Nemo"
 # MODEL_NAME = "Mistral Small"
@@ -16,7 +15,7 @@ MODEL_TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 if __name__ == "__main__":
 
     # Warmup the model
-    print(f"Warming up '{MODEL_NAME}'...")
+    LOGGER.info(f"🧠 Warming up '{MODEL_NAME}'...")
     try:
         response = httpx.post(
             "https://ollama.ai.anhilyx.fr/api/generate",
@@ -33,9 +32,9 @@ if __name__ == "__main__":
             timeout=300
         )
         response.raise_for_status()
-        print(f"✅ Model '{MODEL_NAME}' loaded successfully!")
+        LOGGER.info(f"✅ Model '{MODEL_NAME}' loaded successfully!")
     except Exception as e:
-        print(f"❌ Error while warming up the model: {e}")
+        LOGGER.error(f"❌ Error while warming up the model: {e}")
     
     # Create the game
     sleep(10)
@@ -50,7 +49,7 @@ if __name__ == "__main__":
     res.raise_for_status()
     uuid = res.json()["uuid"]
     agent = Agent(uuid, MODEL_NAME, MODEL_TOKEN)
-    print(f"Game created with UUID: {uuid}")
+    LOGGER.info(f"🎮 Game created with UUID: {uuid}")
 
     # Loop forever
     while True is True:
@@ -62,7 +61,7 @@ if __name__ == "__main__":
                 params={"uuid": uuid}
             )
             if res.status_code == 200:
-                print("Action is available!")
+                LOGGER.info("🎮 Action is available!")
                 break
             sleep(1)
 
@@ -71,6 +70,7 @@ if __name__ == "__main__":
             agent.run()
             print("\n" * 4)
         except Exception as e:
-            traceback.print_exc()
+            LOGGER.error(f"❌ Error while running the agent: {e}")
+            # traceback.print_exc()
         finally:
             sleep(1)
