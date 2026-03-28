@@ -1,27 +1,6 @@
-### Strategic analysis agent
-
-An agent that can search for a strategic analysis for any pokemon/generation/tier on Smogon Academy (or a similar website).
-
-The result depends on what's requested by the AI. The input is a phrase, not a structured query, and the output is the same.
-
-Testing must be done to ensure that this is working as expected, and also to determine if it's fast enough.
-
-### Strategic dictionnary agent
-
-An agent that can give definitions for strategic terms used in competitive Pokemon.
-
-As an input, you give it a string, and you receive a precise definition of this term as an output. This can either be achieved by searching in a list with some leiniency, or by using an AI to detect what word was requested.
-
-When the term is not found, the agent should return a specific message/value indicating that the term is not in the dictionnary.
-
-# Workflow
-
-            --------------------------------------------------
-            |                                                V
-------> Central AI <------------- AI that choose the best (statistically speaking) action
-         |    ^                   (also, possibly a self-learning AI)
-         |    |
-         |    |
-         V    |
-    Multiple agents to gather informations
-    (only on the central AI request)
+- Gérer les moves de switch/les moves bloquants (principalement, forcer l'IA à n'utiliser que les moves qu'elle à le droit d'utiliser, et ne pas l'autoriser à utiliser des moves interdits sur le moment)
+- Fix table des types
+- Eviter les moves inutiles => garder le raisonnement effectué sur plusieurs tours ?
+- Améliorer le raisonnement de l'IA
+- Donner à l'IA la liste des moves les plus probables de l'adversaire
+- Améliorer la requête au calculateur de dégâts, afin de simplifier les appels aux tools (et le remettre en tant que tool disponible)
