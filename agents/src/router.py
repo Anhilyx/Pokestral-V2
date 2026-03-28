@@ -1,7 +1,8 @@
+from fastapi import APIRouter, FastAPI
 import httpx
 from main.agent import Agent
+from threading import Thread
 from time import sleep
-import traceback
 from utils.logging import LOGGER
 
 # MODEL_NAME = "Mistral Nemo"
@@ -11,12 +12,11 @@ from utils.logging import LOGGER
 MODEL_NAME = "Mistral Large (Web)"
 MODEL_TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-
-if __name__ == "__main__":
-
-    # Warmup the model
+# Warmup the model
+while True:
     LOGGER.info(f"🧠 Warming up '{MODEL_NAME}'...")
     try:
+
         response = httpx.post(
             "https://ollama.ai.anhilyx.fr/api/generate",
             headers={
@@ -32,24 +32,57 @@ if __name__ == "__main__":
             timeout=300
         )
         response.raise_for_status()
+
         LOGGER.info(f"✅ Model '{MODEL_NAME}' loaded successfully!")
+        break
+
     except Exception as e:
         LOGGER.error(f"❌ Error while warming up the model: {e}")
+        sleep(10)
     
+
+app = FastAPI()
+router = APIRouter()
+
+
+@router.get("/challenge")
+async def challenge(username: str):
+    """
+    Endpoint to challenge a player on Pokestral's Showdown. This will create a new game against the specified opponent.
+
+    Args:
+        username (str): The username of the opponent to challenge.
+    """
+
+    LOGGER.info(f"⚔️ Challenging player '{username}'...")
+
     # Create the game
-    sleep(10)
     res = httpx.post(
         "https://pokestral.anhilyx.fr/api/poke-env/create/fighter",
         json={
             "username": "Pokestral1",
             "password": "password",
-            "opponent": "Anhilyx",
+            "opponent": username,
         }
     )
     res.raise_for_status()
     uuid = res.json()["uuid"]
     agent = Agent(uuid, MODEL_NAME, MODEL_TOKEN)
     LOGGER.info(f"🎮 Game created with UUID: {uuid}")
+
+    # Start the agent in a separate thread
+    Thread(target=start, args=(uuid, agent)).start()
+    return True
+
+
+def start(uuid: str, agent: Agent):
+    """
+    Function to start the agent. This will run in a separate thread and will continuously check for actions to perform in the game.
+
+    Args:
+        uuid (str): The UUID of the game to play.
+        agent (Agent): The agent to run in the game.
+    """
 
     # Loop forever
     while True is True:
