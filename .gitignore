@@ -27,3 +27,7 @@ __pycache__/
 scraping/replays/
 scraping/stats/
 scraping/lead_percentage.py/
+IA_switch_move/complete_dataset.csv
+IA_switch_move/complete_dataset_2.csv
+IA_switch_move/complete_dataset_for_processing.csv
+IA_switch_move/complete_dataset.csv
