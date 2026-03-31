@@ -2,12 +2,9 @@ import pandas as pd
 
 df = pd.read_csv("stats/complete_dataset.csv")
 
-# traiter chaque match séparément
 for match_id, match in df.groupby("match_id"):
 
     moves_p1 = {}
-
-    # ───── récupérer les moves du match ─────
 
     for _, row in match.iterrows():
 
@@ -24,13 +21,10 @@ for match_id, match in df.groupby("match_id"):
                 if move != "none":
                     moves_p1[pokemon].add(move)
 
-    # convertir en listes de 4 moves
     for p in moves_p1:
         moves = list(moves_p1[p])[:4]
         moves += ["none"] * (4 - len(moves))
         moves_p1[p] = moves
-
-    # ───── appliquer les moves sur les lignes du match ─────
 
     for idx, row in match.iterrows():
 
@@ -45,5 +39,4 @@ for match_id, match in df.groupby("match_id"):
                 for i in range(4):
                     df.at[idx, f"active_p1_move{i+1}"] = moves[i]
 
-# sauvegarde
 df.to_csv("stats/complete_dataset.csv", index=False)

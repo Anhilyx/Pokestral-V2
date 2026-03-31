@@ -1,8 +1,8 @@
 import json
 import os
 
-json_folder = "replays/secondwave"
-output_folder = "replays/gen9ou"
+json_folder = "stats/indent"
+output_folder = "stats/indent"
 for filename in os.listdir(json_folder):
     os.makedirs(output_folder, exist_ok=True)
 
@@ -23,4 +23,4 @@ for filename in os.listdir(json_folder):
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-    print(f"{filename} reformatté ✅")
+    print(f"{filename} reformatté")
