@@ -1,6 +1,0 @@
-- Gérer les moves de switch/les moves bloquants (principalement, forcer l'IA à n'utiliser que les moves qu'elle à le droit d'utiliser, et ne pas l'autoriser à utiliser des moves interdits sur le moment)
-- Fix table des types
-- Eviter les moves inutiles => garder le raisonnement effectué sur plusieurs tours ?
-- Améliorer le raisonnement de l'IA
-- Donner à l'IA la liste des moves les plus probables de l'adversaire
-- Améliorer la requête au calculateur de dégâts, afin de simplifier les appels aux tools (et le remettre en tant que tool disponible)
