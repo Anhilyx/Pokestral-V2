@@ -159,6 +159,7 @@ import { watch } from 'vue';
 
         <!-- Output(s) -->
         <HoloTheme
+            v-if="props.outputs > 0"
             class="holo-app__output-layout"
             :options="['simplified']"
         >

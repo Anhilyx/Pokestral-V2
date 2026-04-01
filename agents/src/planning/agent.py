@@ -6,7 +6,7 @@ from langchain_classic.agents.agent import AgentExecutor
 from langchain_classic.agents.tool_calling_agent.base import create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
 from thinking.models.overview import Teams
-from thinking.tools import get_available_actions, get_damages, get_definition, get_log, get_match_overview, get_pokemon_type_table, get_teams, get_types_table
+from thinking.tools import get_damages, get_definition, get_log, get_match_overview, get_pokemon_type_table, get_teams, get_types_table
 from threading import Thread
 from utils.json_to_markdown import to_table as json_to_table
 from utils.logging import LOGGER
@@ -98,12 +98,12 @@ class Agent:
             agent=create_tool_calling_agent(self.llm, self.tools, ChatPromptTemplate.from_messages([
                 ("system", f"""
                     You are a professional Pokemon competitive player, and you are currently playing a match.
-                    Your goal is to select the best possible action for the current turn, and to explain why this one and not another.
+                    Your goal is to think multiple turns ahead and resume your thoughts for another person to consider in their decision making.
+                    You don't especially need to focus on the current turn. It's more important to think about the overall strategy and the future turns.
                     You have access to several tools that can/must help you make informed decisions.
-                
-                    STRATEGIC ADVICES:
-                    - You can switch OR use a move. Always take this into account, and don't instantly overshadow one possibility over the other.
-                    - You must think about what will your opponent do on the current turn, but also try to think about their next turns (their game-plan), and include this in your reasoning.
+                 
+                    STRATEGIC ADVICE:
+                    - To think about a multi-turn strategy, you must think about the immediate evolutions of the match, a few turns ahead, but also think about both win-conditions and how to achieve or prevent them.
                 
                     ADDITIONAL INFORMATIONS:
                     - The item 'unknown_item' means that you don't know if and which item the pokemon is holding. So no need to ask the definition of 'unknown_item'.
@@ -142,7 +142,6 @@ class Agent:
         # Retrieve the current game context based on the event type
         overview = get_match_overview(self.uuid)
         teams = get_teams(self.uuid)
-        actions = get_available_actions(self.uuid)
 
         # Format the data into a string
         context_str = f"""
@@ -161,13 +160,6 @@ class Agent:
             Affecting your side: {json.dumps(overview.player_field, indent=2)}
             Affecting opponent's side: {json.dumps(overview.opponent_field, indent=2)}
             Affecting both sides: {json.dumps(overview.global_field, indent=2)}
-
-            ---
-
-            ### The actions you can choose for this turn
-
-            Moves: {json.dumps(actions.moves, indent=2)}
-            Switches: {json.dumps(actions.switches, indent=2)}
         """.replace("    ", "")
 
         # Thinking loop

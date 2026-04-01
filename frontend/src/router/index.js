@@ -2,6 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
     {
+        path: '/',
+        name: 'challenge',
+        component: () => import('@/views/MainView.vue')
+    },
+    {
         path: '/tools',
         name: 'tools',
         component: () => import('@/views/ToolsView.vue')

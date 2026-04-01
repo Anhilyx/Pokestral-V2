@@ -11,6 +11,10 @@ http://pokestral.anhilyx.fr {
         reverse_proxy pokestral-poke-env:8000
     }
 
+    handle /api/agents/* {
+        reverse_proxy pokestral-agents:8000
+    }
+
     handle {
         reverse_proxy pokestral-frontend:80
     }
