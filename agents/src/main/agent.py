@@ -7,6 +7,7 @@ from langchain_classic.agents.tool_calling_agent.base import create_tool_calling
 from langchain_core.prompts import ChatPromptTemplate
 from main.models.response import Action
 from planning.agent import Agent as PlanningAgent
+from switching.agent import Agent as SwitchingAgent
 from thinking.agent import Agent as ThinkingAgent
 from time import sleep
 import traceback
@@ -54,7 +55,8 @@ class Agent:
         # Initialize the Thinking Agent
         self.planning_agent = PlanningAgent(uuid, model_name, api_token)
         self.thinking_agent = ThinkingAgent(uuid, model_name, api_token)
-        
+        self.switching_agent = SwitchingAgent(uuid)
+
         # Bind the available tools
         self.tools = [
             StructuredTool.from_function(
@@ -81,6 +83,9 @@ class Agent:
                 ("human", """
                     ---
                  
+                    ### The prediction model says that:
+                    - You must {predicted_action_type}.
+                 
                     ### Response from the 'planning' agent:
                  
                     {initial_planning}
@@ -105,6 +110,10 @@ class Agent:
         """
 
         try:
+            # Get the predictive model's responses
+            predicted_action_type = self.switching_agent()
+            LOGGER.info(f"🔮 The predictive model says that the best action to take is to {predicted_action_type}.")
+
             # Ask the sub-agents a first time before starting
             LOGGER.info(f"🔄 Asking for thoughts...")
             initial_planning = self.planning_agent.think()
@@ -115,6 +124,7 @@ class Agent:
 
             # Invoke the agent to get the best action to take
             response = self.agent.invoke({
+                "predicted_action_type": predicted_action_type,
                 "initial_planning": initial_planning,
                 "initial_thoughts": initial_thoughts
             })["output"]

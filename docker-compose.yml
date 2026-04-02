@@ -10,6 +10,8 @@ services:
     networks:
       - internal
     environment:
+      - MODEL_NAME="Mistral Large (Web)"
+      - MODEL_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
 

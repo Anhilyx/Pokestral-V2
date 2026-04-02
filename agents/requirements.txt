@@ -4,4 +4,8 @@ langchain
 langchain-community
 langchain-mistralai
 langchain-openai
+lightgbm
+pandas
+requests
+scikit-learn
 uvicorn
