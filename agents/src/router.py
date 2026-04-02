@@ -1,3 +1,4 @@
+from os import environ as env
 from fastapi import APIRouter, FastAPI
 import httpx
 from main.agent import Agent
@@ -9,8 +10,13 @@ from utils.logging import LOGGER
 # MODEL_NAME = "Mistral Small"
 # MODEL_NAME = "Qwen 2.5"
 # MODEL_NAME = "Qwen 3.5 4B"
-MODEL_NAME = "Mistral Large (Web)"
-MODEL_TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# MODEL_NAME = "Mistral Large (Web)"
+MODEL_NAME = env.get("MODEL_NAME", "Mistral Large (Web)")
+MODEL_TOKEN = env.get("MODEL_TOKEN", "")
+
+if MODEL_NAME == "" or MODEL_TOKEN == "":
+    LOGGER.error("❌ MODEL_NAME and MODEL_TOKEN environment variables must be set!")
+    exit(1)
 
 # Warmup the model
 while True:
