@@ -102,3 +102,8 @@ Currently, the AI takes several tens of seconds to deliberate on a turn. While c
 
 ### 3.5 Autonomous Team Building
 Right now, the AI is restricted to Random Battles (or hardcoding a specific team into the backend). A highly fascinating evolution of this project would be giving the AI the ability to draft its own competitive team from scratch. This would require new specific Generative AI roles and heavy support from the predictive data models to analyze the current meta-game.
+
+### 3.6 Automated Testing & Quality Benchmarking
+A critical final step would be the implementation of a comprehensive testing suite. 
+* **Edge-Case Validation:** During manual testing, we discovered several rare Pokémon interactions (abilities, niche move effects) that confused the AI. Automated unit tests for these specific scenarios would ensure the tools and prompts handle them correctly. 
+* **Quantifiable Performance Metrics:** We need to move beyond "feeling" that the AI is better. An idea would be to use the built-in Showdown laddering system to have the AI tested against a large sample of real human players, tracking its win rate, average opponent rank. But, aside from the long thinking time, it presented two issues : the rules of Showdown that doesn't allow to use bots on their real server (the one with enough players to ladder against), and the fact that this method would only account for the winrate, and not on more specific details. So this last point would still need more thoughts to be properly implementable.
