@@ -31,6 +31,14 @@ The project relies on a multi-agent system where different AIs communicate with 
 
 ```mermaid
 graph TD
+    %% Définition des palettes de couleurs
+    classDef env fill:#ffcccc,stroke:#cc0000,stroke-width:2px,color:#000
+    classDef api fill:#cce5ff,stroke:#0066cc,stroke-width:2px,color:#000
+    classDef mainAI fill:#e6ccff,stroke:#6600cc,stroke-width:2px,color:#000
+    classDef subAI fill:#ccffcc,stroke:#006600,stroke-width:2px,color:#000
+    classDef data fill:#ffe6cc,stroke:#cc6600,stroke-width:2px,color:#000
+
+    %% Structure du graphe
     SD[Pokemon Showdown] <--> PE[Poke-env API]
     PE <--> MainAI[Main Generative AI]
 
@@ -43,6 +51,13 @@ graph TD
     Tools <--> PE
 
     CSV[(Extracted .csv Stats)] --> PredAI
+
+    %% Application des couleurs aux nœuds correspondants
+    class SD env;
+    class PE,Tools api;
+    class MainAI mainAI;
+    class CurrentTurnAI,PlanningAI,PredAI subAI;
+    class CSV data;
 ```
 
 ### 2.1 Pokemon Showdown
@@ -85,31 +100,33 @@ We extracted massive amounts of battle data from Pokemon Showdown's official rep
 > *Note: We ideally wanted to feed this data to the Generative AIs to help them deduce standard opponent sets (e.g., "What are the 4 most common moves for this specific enemy?"). Due to time constraints, this link between the generative agents and the historical CSV data was not implemented.*
 
 ---
+
 ## 3. Data parsing
 
 To train the LightGBM model, we spent a lot of time collecting data. For this purpose, we gathered more than 3,000 JSON files containing logs of Pokémon matches played online by the community. We then parsed these files to obtain the following columns :  
-- match_id: Unique identifier of the match  
-- source_file: Original JSON file from which the match was parsed  
-- turn: Current turn number in the battle
-- terrain / weather: Contain the type of terrain/weather currently active in the match, if any
-- trick_room: Boolean indicating whether Trick Room is active (slower Pokémon move first)
-- tailwind_p1/p2 / hazards_p1/p2 / screens_p1/p2: Contain the active field effects on each side of the field, if any
-- active_p1/p2 / active_p1_name/active_p2_name: Contain the letter corresponding to the Pokémon currently on the field for each player, while the "name" columns contain the species
-- choice_p1 / action_p1: The first contains the player's choice (switch or stay), while the second contains the encoded version of that choice (0 = stay; 1 = switch)
-- pokemon_p1X/p2X: Contain the species of each Pokémon on both players’ teams, with X ranging from A to F (6 Pokémon per team)
-- type_1_p1X/p2X / type_2_p1X/p2X: Contain the primary and secondary types of the corresponding Pokémon
-- hp_p1X/p2X: Contain the percentage of HP remaining for each Pokémon
-- status_p1X/p2X: Contain the status condition (poisoned, paralyzed, burned, frozen, confused), if any
-- active_p1/p2_atk/def/spa/...: Contain the stat boosts or reductions affecting the active Pokémon during the battle
-- active_p1/p2_move1/2/3/4: Contain the moves known by the Pokémon (these columns are often incomplete because replays come from competitive matches, so not all moves are always revealed)
-- matchup_p1/p2_type1/2: Contain the effectiveness ratio between the types of the active Pokémon
-- active_p1/p2_name_X_stat: Contain the base stats of the active Pokémon based on their species (if the species could not be retrieved during parsing, stats are set to 0 by default)
-- hp_diff / atk_diff / def_diff / spa_diff / spd_diff / spe_diff: Contain the differences between the base stats of the active Pokémon
-- atk_vs_def / spa_vs_spd: Compare the offensive stat of Player 1’s active Pokémon against Player 2’s defensive stat
-- speed_advantage: Indicates which Pokémon is most likely to move first based on speed
-- total_stat_p1/p2 / total_diff: Contain the total aggregated stats and their difference  
+- `match_id`: Unique identifier of the match  
+- `source_file`: Original JSON file from which the match was parsed  
+- `turn`: Current turn number in the battle
+- `terrain` / `weather`: Contain the type of terrain/weather currently active in the match, if any
+- `trick_room`: Boolean indicating whether Trick Room is active (slower Pokémon move first)
+- `tailwind_p1`/`p2` / `hazards_p1`/`p2` / `screens_p1`/`p2`: Contain the active field effects on each side of the field, if any
+- `active_p1`/`p2` / `active_p1_name`/`active_p2_name`: Contain the letter corresponding to the Pokémon currently on the field for each player, while the "name" columns contain the species
+- `choice_p1` / `action_p1`: The first contains the player's choice (switch or stay), while the second contains the encoded version of that choice (0 = stay; 1 = switch)
+- `pokemon_p1X`/`p2X`: Contain the species of each Pokémon on both players’ teams, with X ranging from A to F (6 Pokémon per team)
+- `type_1_p1X`/`p2X` / `type_2_p1X`/`p2X`: Contain the primary and secondary types of the corresponding Pokémon
+- `hp_p1X`/`p2X`: Contain the percentage of HP remaining for each Pokémon
+- `status_p1X`/`p2X`: Contain the status condition (poisoned, paralyzed, burned, frozen, confused), if any
+- `active_p1`/`p2_atk`/`def`/`spa`/...: Contain the stat boosts or reductions affecting the active Pokémon during the battle
+- `active_p1`/`p2_move1`/`2`/`3`/`4`: Contain the moves known by the Pokémon (these columns are often incomplete because replays come from competitive matches, so not all moves are always revealed)
+- `matchup_p1`/`p2_type1`/`2`: Contain the effectiveness ratio between the types of the active Pokémon
+- `active_p1`/`p2_name_X_stat`: Contain the base stats of the active Pokémon based on their species (if the species could not be retrieved during parsing, stats are set to 0 by default)
+- `hp_diff` / `atk_diff` / `def_diff` / `spa_diff` / `spd_diff` / `spe_diff`: Contain the differences between the base stats of the active Pokémon
+- `atk_vs_def` / `spa_vs_spd`: Compare the offensive stat of Player 1’s active Pokémon against Player 2’s defensive stat
+- `speed_advantage`: Indicates which Pokémon is most likely to move first based on speed
+- `total_stat_p1`/`p2` / `total_diff`: Contain the total aggregated stats and their difference  
 
 ---
+
 ## 4. Future Improvements
 
 While Pokestral is fully functional, there are several avenues that should be explored to improve the agent's strength and fluidity:
