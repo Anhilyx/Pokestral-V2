@@ -34,9 +34,9 @@ graph TD
     %% Définition des palettes de couleurs
     classDef env fill:#ffcccc,stroke:#cc0000,stroke-width:2px,color:#000
     classDef api fill:#cce5ff,stroke:#0066cc,stroke-width:2px,color:#000
-    classDef mainAI fill:#e6ccff,stroke:#6600cc,stroke-width:2px,color:#000
+    classDef mainAI fill:#ccffcc,stroke:#006600,stroke-width:2px,color:#000
     classDef subAI fill:#ccffcc,stroke:#006600,stroke-width:2px,color:#000
-    classDef data fill:#ffe6cc,stroke:#cc6600,stroke-width:2px,color:#000
+    classDef data fill:#e6ccff,stroke:#6600cc,stroke-width:2px,color:#000
 
     %% Structure du graphe
     SD[Pokemon Showdown] <--> PE[Poke-env API]
