@@ -64,6 +64,8 @@ This is the orchestrator. It gathers the outputs and analyses from all the other
 #### 2.3.2 Predictive AI
 This is a machine learning model based on **LightGBM**. Its sole purpose is to predict the binary choice: *should we switch our Pokemon, or should we attack?* Generative AIs often struggle immensely with this specific decision (frequently getting "stuck" favoring one over the other). This predictive AI serves as a hard anchor to resolve that flaw. We originally planned to predict other variables (like the opponent's exact move), but the sheer complexity and parameter count of the switch/attack choice consumed our available development time.
 
+> *Note : More information on the parsing can be found after this part.*
+
 #### 2.3.3 Current Turn Generative AI
 This agent focuses purely on executing the optimal action for the current turn. It has access to our suite of tools to decide whether to attack (and which move to use), switch (and to which Pokemon), and trigger mechanics like Mega-Evolution. By default, it receives a context equivalent to what a human player sees at a glance, plus essential strategic data (type charts, available valid actions, and strategic tips). The Main AI can also feed it additional constraints to guide its output.
 
@@ -83,27 +85,51 @@ We extracted massive amounts of battle data from Pokemon Showdown's official rep
 > *Note: We ideally wanted to feed this data to the Generative AIs to help them deduce standard opponent sets (e.g., "What are the 4 most common moves for this specific enemy?"). Due to time constraints, this link between the generative agents and the historical CSV data was not implemented.*
 
 ---
+## 3. Data parsing
 
-## 3. Future Improvements
+To train the LightGBM model, we spent a lot of time collecting data. For this purpose, we gathered more than 3,000 JSON files containing logs of Pokémon matches played online by the community. We then parsed these files to obtain the following columns :  
+- match_id: Unique identifier of the match  
+- source_file: Original JSON file from which the match was parsed  
+- turn: Current turn number in the battle
+- terrain / weather: Contain the type of terrain/weather currently active in the match, if any
+- trick_room: Boolean indicating whether Trick Room is active (slower Pokémon move first)
+- tailwind_p1/p2 / hazards_p1/p2 / screens_p1/p2: Contain the active field effects on each side of the field, if any
+- active_p1/p2 / active_p1_name/active_p2_name: Contain the letter corresponding to the Pokémon currently on the field for each player, while the "name" columns contain the species
+- choice_p1 / action_p1: The first contains the player's choice (switch or stay), while the second contains the encoded version of that choice (0 = stay; 1 = switch)
+- pokemon_p1X/p2X: Contain the species of each Pokémon on both players’ teams, with X ranging from A to F (6 Pokémon per team)
+- type_1_p1X/p2X / type_2_p1X/p2X: Contain the primary and secondary types of the corresponding Pokémon
+- hp_p1X/p2X: Contain the percentage of HP remaining for each Pokémon
+- status_p1X/p2X: Contain the status condition (poisoned, paralyzed, burned, frozen, confused), if any
+- active_p1/p2_atk/def/spa/...: Contain the stat boosts or reductions affecting the active Pokémon during the battle
+- active_p1/p2_move1/2/3/4: Contain the moves known by the Pokémon (these columns are often incomplete because replays come from competitive matches, so not all moves are always revealed)
+- matchup_p1/p2_type1/2: Contain the effectiveness ratio between the types of the active Pokémon
+- active_p1/p2_name_X_stat: Contain the base stats of the active Pokémon based on their species (if the species could not be retrieved during parsing, stats are set to 0 by default)
+- hp_diff / atk_diff / def_diff / spa_diff / spd_diff / spe_diff: Contain the differences between the base stats of the active Pokémon
+- atk_vs_def / spa_vs_spd: Compare the offensive stat of Player 1’s active Pokémon against Player 2’s defensive stat
+- speed_advantage: Indicates which Pokémon is most likely to move first based on speed
+- total_stat_p1/p2 / total_diff: Contain the total aggregated stats and their difference  
+
+---
+## 4. Future Improvements
 
 While Pokestral is fully functional, there are several avenues that should be explored to improve the agent's strength and fluidity:
 
-### 3.1 Testing with the Gemini API
+### 4.1 Testing with the Gemini API
 Testing other LLMs via their APIs is our primary target. Given how incredibly well Gemini performed in web tests, integrating it fully with tool access and complete context would likely result in a massive leap in the AI's playing strength. This would also require adjusting our prompts and tool definitions to fit the new model's logic.
 
-### 3.2 Expanded Predictive Models
+### 4.2 Expanded Predictive Models
 We plan to expand the LightGBM models (or introduce new ML architectures) to predict more granular events, such as anticipating the exact move the opponent will use next, or predicting the opponent's optimal switch.
 
-### 3.3 Reinforcement Learning (RL)
+### 4.3 Reinforcement Learning (RL)
 We strongly considered implementing a **Reinforcement Learning** agent — an AI that learns strictly through trial and error by playing its matches and optimizing a reward function. We did not start this due to time limitations and extreme complexity, but adding an RL layer could fix inherent biases that our current prompt-based Generative AIs will retain regardless of how many times they run, even if it probably wouldn't have been enough on its own to reach a competitive layer, due to the complexity of predicting multiple turns ahead.
 
-### 3.4 Speed and Fluidity Optimization
+### 4.4 Speed and Fluidity Optimization
 Currently, the AI takes several tens of seconds to deliberate on a turn. While completely playable, it is not a fluid experience. Furthermore, the AI currently wastes time "thinking" even when there is only one valid legal move (e.g., if a Pokemon is trapped and locked into a move). Implementing heuristic fast-paths to skip AI deliberation when choices are forced would drastically improve user experience, and optimizing the overall reasoning process (potentially by reducing the number of tool calls even more or streamlining prompts) would further reduce latency.
 
-### 3.5 Autonomous Team Building
+### 4.5 Autonomous Team Building
 Right now, the AI is restricted to Random Battles (or hardcoding a specific team into the backend). A highly fascinating evolution of this project would be giving the AI the ability to draft its own competitive team from scratch. This would require new specific Generative AI roles and heavy support from the predictive data models to analyze the current meta-game.
 
-### 3.6 Automated Testing & Quality Benchmarking
+### 4.6 Automated Testing & Quality Benchmarking
 A critical final step would be the implementation of a comprehensive testing suite. 
 * **Edge-Case Validation:** During manual testing, we discovered several rare Pokémon interactions (abilities, niche move effects) that confused the AI. Automated unit tests for these specific scenarios would ensure the tools and prompts handle them correctly. 
 * **Quantifiable Performance Metrics:** We need to move beyond "feeling" that the AI is better. An idea would be to use the built-in Showdown laddering system to have the AI tested against a large sample of real human players, tracking its win rate, average opponent rank. But, aside from the long thinking time, it presented two issues : the rules of Showdown that doesn't allow to use bots on their real server (the one with enough players to ladder against), and the fact that this method would only account for the winrate, and not on more specific details. So this last point would still need more thoughts to be properly implementable.
